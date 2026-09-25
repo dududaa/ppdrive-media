@@ -10,3 +10,6 @@ license = "MIT OR Apache-2.0"
 [build-dependencies]
 bindgen = "0.73"
 pkg-config = "0.3"
+
+[lib]
+name = "image_compression"

@@ -9,9 +9,10 @@ fn main() {
     println!("cargo:rerun-if-env-changed=PKG_CONFIG_PATH");
 
     let mut include_paths: Vec<PathBuf> = Vec::new();
+    let mut lavf_major: Option<u32> = None;
 
     for library in LIBRARIES {
-        let library = pkg_config::Config::new().probe(library).unwrap_or_else(|e| {
+        let lib = pkg_config::Config::new().probe(library).unwrap_or_else(|e| {
             panic!(
                 "Failed to find {library} via pkg-config: {e}\n\
                  Install the FFmpeg development packages:\n\
@@ -22,10 +23,25 @@ fn main() {
             )
         });
 
-        for path in library.include_paths {
+        if *library == "libavformat" {
+            lavf_major = lib.version.split('.').next().and_then(|m| m.parse().ok());
+        }
+
+        for path in lib.include_paths {
             if !include_paths.contains(&path) {
                 include_paths.push(path);
             }
+        }
+    }
+
+    println!(
+        "cargo::rustc-check-cfg=cfg(ffmpeg_major, values(\"59\", \"60\", \"61\", \"62\", \"63\", \"64\"))"
+    );
+    println!("cargo::rustc-check-cfg=cfg(ffmpeg_avio_write_nonconst)");
+    if let Some(major) = lavf_major {
+        println!("cargo:rustc-cfg=ffmpeg_major=\"{major}\"");
+        if major < 61 {
+            println!("cargo:rustc-cfg=ffmpeg_avio_write_nonconst");
         }
     }
 
@@ -33,7 +49,7 @@ fn main() {
         .header("src/ffi/wrapper.h")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .layout_tests(false)
-        .generate_comments(true)
+        .generate_comments(false)
         .prepend_enum_name(false)
         .allowlist_function("av.*|sws.*|ff.*")
         .allowlist_type("AV.*|Sws.*|av.*|sws.*|ff.*")

@@ -48,6 +48,7 @@ impl<'a> AvioReader<'a> {
                 None,
                 None,
             );
+
             if avio.is_null() {
                 av_free(buffer as *mut c_void);
                 drop(Box::from_raw(state));
@@ -112,7 +113,17 @@ impl WriteState {
     }
 }
 
+#[cfg(ffmpeg_avio_write_nonconst)]
 extern "C" fn write_callback(opaque: *mut c_void, buf: *mut u8, buf_size: c_int) -> c_int {
+    write_bytes(opaque, buf, buf_size)
+}
+
+#[cfg(not(ffmpeg_avio_write_nonconst))]
+extern "C" fn write_callback(opaque: *mut c_void, buf: *const u8, buf_size: c_int) -> c_int {
+    write_bytes(opaque, buf, buf_size)
+}
+
+fn write_bytes(opaque: *mut c_void, buf: *const u8, buf_size: c_int) -> c_int {
     let state = unsafe { &mut *(opaque as *mut WriteState) };
     let slice = unsafe { std::slice::from_raw_parts(buf, buf_size as usize) };
     state.ensure_capacity(state.pos + slice.len());

@@ -3,6 +3,7 @@
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
+#include <libavutil/avutil.h>
 #include <libavutil/error.h>
 #include <libavutil/frame.h>
 #include <libavutil/imgutils.h>
