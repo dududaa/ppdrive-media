@@ -43,12 +43,12 @@ pub(crate) fn round_to_even(width: u32, height: u32, force_even: bool) -> (u32, 
 }
 
 pub(crate) fn convert(
-    frame: Frame,
+    frame: &Frame,
     width: u32,
     height: u32,
     pix_fmt: crate::ffi::AVPixelFormat,
 ) -> Result<Frame, Error> {
-    scale_frame(&frame, width, height, pix_fmt)
+    scale_frame(frame, width, height, pix_fmt)
 }
 
 #[cfg(test)]

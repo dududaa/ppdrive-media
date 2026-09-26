@@ -71,6 +71,18 @@ impl<'a> Demuxer<'a> {
         }
     }
 
+    /// Name of the probed input demuxer (e.g. `"jpeg_pipe"`), as reported
+    /// by FFmpeg's content probe.
+    pub fn format_name(&self) -> Option<&str> {
+        unsafe {
+            let iformat = (*self.fmt).iformat;
+            if iformat.is_null() || (*iformat).name.is_null() {
+                return None;
+            }
+            std::ffi::CStr::from_ptr((*iformat).name).to_str().ok()
+        }
+    }
+
     pub fn read_video_frame(&mut self) -> Result<Frame, Error> {
         let frame = Frame::new()?;
         let mut packet = Packet::new()?;

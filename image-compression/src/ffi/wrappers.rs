@@ -21,6 +21,10 @@ impl Frame {
         self.0
     }
 
+    pub(crate) fn from_ptr(ptr: *mut AVFrame) -> Frame {
+        Frame(ptr)
+    }
+
     pub fn width(&self) -> u32 {
         unsafe { (*self.0).width as u32 }
     }

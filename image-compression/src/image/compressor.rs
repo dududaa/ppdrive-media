@@ -59,23 +59,16 @@ impl ImageCompressor {
             return Err(Error::InvalidInput);
         }
 
-        let frame = decode::decode(input)?;
-        let spec = encode::spec_for(options.format);
-
-        let (width, height) = resize::target_dimensions(frame.width(), frame.height(), &options)?;
-        let (width, height) = resize::round_to_even(width, height, spec.force_even);
-
-        let dst_fmt = spec.pix_fmt(frame.has_alpha());
-        let frame = if frame.width() == width
-            && frame.height() == height
-            && frame.format() == dst_fmt as i32
-        {
-            frame
-        } else {
-            resize::convert(frame, width, height, dst_fmt)?
-        };
-
-        encode::encode(&frame, &options, &spec)
+        let decoded = decode::decode(input)?;
+        let (width, height) =
+            resize::target_dimensions(decoded.width(), decoded.height(), &options)?;
+        encode::encode_prepared(
+            decoded.raw(),
+            options.format,
+            options.quality,
+            width,
+            height,
+        )
     }
 }
 

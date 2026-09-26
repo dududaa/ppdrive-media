@@ -3,6 +3,7 @@ use crate::ffi;
 use crate::ffi::encode::{EncodeConfig, Encoder};
 use crate::ffi::wrappers::{Frame, find_encoder_by_id, find_encoder_by_name};
 use crate::image::options::{CompressionOptions, ImageFormat};
+use crate::image::resize;
 
 pub(crate) struct EncodeSpec {
     pub muxer: &'static str,
@@ -124,6 +125,32 @@ pub(crate) fn encode(
     let mut encoder = Encoder::new(config)?;
     encoder.encode_frame(frame)?;
     encoder.finish()
+}
+
+/// Prepares a decoded frame for `format` (even-dimension rounding for
+/// chroma-subsampled targets + pixel-format conversion) and encodes it.
+pub(crate) fn encode_prepared(
+    frame: &crate::ffi::wrappers::Frame,
+    format: ImageFormat,
+    quality: u8,
+    width: u32,
+    height: u32,
+) -> Result<Vec<u8>, Error> {
+    let spec = spec_for(format);
+    let (width, height) = resize::round_to_even(width, height, spec.force_even);
+    let dst_fmt = spec.pix_fmt(frame.has_alpha());
+    let options = CompressionOptions {
+        format,
+        quality,
+        width: None,
+        height: None,
+    };
+    if frame.width() == width && frame.height() == height && frame.format() == dst_fmt as i32 {
+        encode(frame, &options, &spec)
+    } else {
+        let converted = resize::convert(frame, width, height, dst_fmt)?;
+        encode(&converted, &options, &spec)
+    }
 }
 
 #[cfg(test)]
