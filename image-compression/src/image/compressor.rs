@@ -3,9 +3,26 @@ use crate::ffi;
 use crate::image::options::CompressionOptions;
 use crate::image::{decode, encode, resize};
 
+/// Entry point for decoding, resizing and encoding images through FFmpeg.
+///
+/// The struct itself is a zero-sized handle; creating it verifies that all
+/// four encoders (JPEG, PNG, WebP, AVIF) are available in the linked
+/// FFmpeg libraries and lowers FFmpeg's log verbosity to errors only.
+///
+/// Instances are `Send + Sync` in spirit (no shared state) and may be
+/// reused for any number of [`compress`](ImageCompressor::compress) calls.
 pub struct ImageCompressor;
 
 impl ImageCompressor {
+    /// Creates a compressor after checking that JPEG, PNG, WebP and AVIF
+    /// encoders are present in the linked FFmpeg build.
+    ///
+    /// Returns [`crate::Error::EncoderNotFound`] if any of them is missing,
+    /// which can happen when FFmpeg was configured without
+    /// `--enable-libaom` (AVIF) or `--enable-libwebp` (WebP).
+    ///
+    /// FFmpeg's global log level is set to `AV_LOG_ERROR` on first call
+    /// and never raised above it.
     pub fn new() -> Result<Self, Error> {
         unsafe {
             if ffi::av_log_get_level() > ffi::AV_LOG_ERROR as i32 {
@@ -23,6 +40,20 @@ impl ImageCompressor {
         Ok(ImageCompressor)
     }
 
+    /// Compresses an encoded image into the requested format.
+    ///
+    /// `input` may be any still image format FFmpeg can decode
+    /// (JPEG, PNG, WebP, GIF, BMP, TIFF, …), probed from content — file
+    /// extensions are irrelevant. AVIF *input* is rejected with
+    /// [`Error::UnsupportedFormat`] because FFmpeg ships no AVIF demuxer.
+    ///
+    /// Pipeline: decode → resize/convert per `options` → encode. When no
+    /// resize or pixel-format change is needed the decoded frame is passed
+    /// through untouched.
+    ///
+    /// Returns [`Error::InvalidInput`] if `options.width` or
+    /// `options.height` is `Some(0)`, or if the input is empty or
+    /// undecodable.
     pub fn compress(&self, input: &[u8], options: CompressionOptions) -> Result<Vec<u8>, Error> {
         if options.width == Some(0) || options.height == Some(0) {
             return Err(Error::InvalidInput);

@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 description = "High-performance image compression library with FFmpeg as the native execution engine"
 license = "MIT OR Apache-2.0"
+readme = "README.MD"
 
 [dependencies]
 
