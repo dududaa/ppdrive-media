@@ -1,10 +1,12 @@
+use serde::Deserialize;
+
 /// Output format to encode the compressed image into.
 ///
 /// Selecting a variant also selects the underlying FFmpeg encoder:
 /// MJPEG for [`ImageFormat::Jpeg`], the native PNG encoder for
 /// [`ImageFormat::Png`], libwebp for [`ImageFormat::WebP`] and
 /// libaom-AV1 (via the AVIF muxer) for [`ImageFormat::Avif`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 pub enum ImageFormat {
     /// Lossy JPEG. Alpha channels are discarded; dimensions are rounded up
     /// to even values.
@@ -74,7 +76,7 @@ impl ImageFormat {
 ///     height: None,   // keep aspect ratio at 800px wide
 /// }
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct CompressionOptions {
     /// Output format. Default: [`ImageFormat::Jpeg`].
     pub format: ImageFormat,
