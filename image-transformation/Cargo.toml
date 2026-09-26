@@ -1,0 +1,21 @@
+[package]
+name = "ppdrive-image-transformation"
+version = "0.1.0"
+edition = "2024"
+description = "High-performance image transformation library with FFmpeg (libavfilter) as the native execution engine"
+license = "MIT OR Apache-2.0"
+readme = "README.MD"
+
+[dependencies]
+image-compression.workspace = true
+ppdrive.workspace = true
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+
+[build-dependencies]
+bindgen = "0.73"
+pkg-config = "0.3"
+
+[lib]
+name = "image_transformation"
+crate-type = ["cdylib", "lib"]
