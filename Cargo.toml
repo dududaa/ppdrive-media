@@ -4,6 +4,6 @@ members = ["image-compression", "image-transformation"]
 
 [workspace.dependencies]
 image-compression = { path = "image-compression", package = "ppdrive-image-compression" }
-ppdrive.path = "../ppdrive/core"
+ppdrive = "0.2.0"
 serde = "1.0.229"
 serde_json = "1.0.151"

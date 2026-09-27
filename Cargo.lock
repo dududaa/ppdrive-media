@@ -1171,6 +1171,8 @@ checksum = "439ee305def115ba05938db6eb1644ff94165c5ab5e9420d1c1bcedbba909391"
 [[package]]
 name = "ppdrive"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9eb6f26bd5680616767437d2772c4b0ede765c279681f23ecc5f30364c9f4f6d"
 dependencies = [
  "anyhow",
  "argon2",
