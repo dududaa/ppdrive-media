@@ -2,6 +2,7 @@
 name = "ppdrive-image-transformation"
 version = "0.1.0"
 edition = "2024"
+rust-version = "1.94"
 description = "High-performance image transformation library with FFmpeg (libavfilter) as the native execution engine"
 license = "MIT OR Apache-2.0"
 readme = "README.MD"
@@ -19,3 +20,6 @@ pkg-config = "0.3"
 [lib]
 name = "image_transformation"
 crate-type = ["cdylib", "lib"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }

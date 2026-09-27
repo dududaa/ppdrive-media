@@ -28,9 +28,13 @@ mod image;
 
 pub use error::Error;
 pub use image::{CompressionOptions, Frame, ImageCompressor, ImageFormat};
+#[cfg(not(fuzzing))]
 use ppdrive::plugin::loader::DispatchResponse;
+#[cfg(not(fuzzing))]
 use serde_json::Value;
+#[cfg(not(fuzzing))]
 use std::ffi::c_void;
+#[cfg(not(fuzzing))]
 use std::fmt::Display;
 
 /// ppdrive plugin entry point: decodes and compresses an image.
@@ -48,6 +52,7 @@ use std::fmt::Display;
 /// - The input slice and JSON reference must remain valid for the
 ///   duration of the call.
 /// - The returned pointer must be reclaimed exactly once by the caller.
+#[cfg(not(fuzzing))]
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn plugin_dispatch(args: *mut c_void) -> *mut DispatchResponse {
     let args = unsafe { Box::from_raw(args as *mut (&[u8], &Value)) };
@@ -71,6 +76,7 @@ pub unsafe extern "C" fn plugin_dispatch(args: *mut c_void) -> *mut DispatchResp
     Box::into_raw(Box::new(resp))
 }
 
+#[cfg(not(fuzzing))]
 fn unsafe_err(err: impl Display) -> *mut DispatchResponse {
     let resp = DispatchResponse::Error(err.to_string());
     Box::into_raw(Box::new(resp))

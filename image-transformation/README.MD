@@ -45,7 +45,8 @@ pixel buffers.
 
 ## Requirements
 
-- Rust 1.85+ (edition 2024)
+- Rust 1.94+ (edition 2024; the MSRV is driven by the `ppdrive`
+  dependency tree, not by this crate itself)
 - FFmpeg **development** libraries: `libavfilter`, `libavutil`
   - Debian/Ubuntu: `sudo apt install libavfilter-dev libavutil-dev pkg-config`
   - WebP/AVIF *outputs* additionally require `--enable-libwebp` /
@@ -195,6 +196,48 @@ cargo run --example transform -- photo.png thumb.jpg \
 - The `ffi` module is internal; public API is `ImageTransformer`,
   `TransformOptions`, `TransformOperation`, `Error` and
   `ImageFormat` (re-exported from the bridge).
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every push to `main` and every pull
+request:
+
+- **Format & Clippy** — `cargo fmt --all --check` and
+  `cargo clippy --workspace --all-targets -- -D warnings`
+- **Test** — the full suite on Ubuntu 24.04 (system FFmpeg 6.1) and
+  macOS (Homebrew FFmpeg), covering both ends of the supported FFmpeg
+  range
+- **MSRV** — `cargo check` with Rust 1.94.0
+- **Fuzz** — a 60-second `cargo fuzz` smoke run; non-blocking, because
+  a crash found during fuzzing may be in upstream FFmpeg
+
+## Fuzzing
+
+```bash
+rustup toolchain install nightly
+cargo install cargo-fuzz
+cd image-transformation
+cargo fuzz run fuzz_transform         # smoke run: -- -max_total_time=60
+```
+
+## Releases
+
+`.github/workflows/release.yml` publishes artifacts on every `v*` tag:
+
+| Target | Runner | FFmpeg used |
+|--------|--------|-------------|
+| `x86_64-unknown-linux-gnu` | Ubuntu 24.04 | system FFmpeg 6.1 dev libs |
+| `aarch64-apple-darwin` | macOS arm64 | Homebrew FFmpeg |
+| `x86_64-apple-darwin` | macOS Intel (`macos-15-intel`) | Homebrew FFmpeg |
+| `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
+
+Artifacts follow `ppdrive-<package-name>-<os>-<arch>.<ext>` (`.zip`
+on Windows, `.tar.gz` otherwise), for example
+`ppdrive-image-transformation-macos-aarch64.tar.gz`. Each archive
+contains the `libimage_transformation` ppdrive plugin cdylib, the
+`transform` example CLI and this README. FFmpeg shared libraries are
+**not** bundled (licensing) — the target machine needs its own
+FFmpeg installation at runtime.
 
 ## License
 

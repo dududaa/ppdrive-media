@@ -1,0 +1,136 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Format & Clippy
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal --component rustfmt clippy
+          rustup default stable
+      - name: Install FFmpeg development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswscale-dev
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ github.job }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Format
+        run: cargo fmt --all --check
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+  test:
+    name: Test (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: ubuntu-24.04-system-ffmpeg-6.1
+            os: ubuntu-24.04
+          - name: macos-brew-ffmpeg
+            os: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - name: Install FFmpeg (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswscale-dev
+      - name: Install FFmpeg (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg pkg-config
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ github.job }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Test
+        run: cargo test --workspace --all-targets --locked
+      - name: Doc tests
+        run: cargo test --workspace --doc --locked
+
+  msrv:
+    name: MSRV (rustc 1.94.0)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install 1.94.0 --profile minimal
+          rustup default 1.94.0
+      - name: Install FFmpeg development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswscale-dev
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ github.job }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Check at MSRV
+        run: cargo check --workspace --all-targets --locked
+
+  fuzz:
+    name: Fuzz (smoke)
+    runs-on: ubuntu-24.04
+    # Fuzzing exercises the FFmpeg libraries themselves; a crash found in
+    # upstream FFmpeg code should surface as a visible (but non-blocking)
+    # signal rather than gating every pull request.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install nightly --profile minimal
+          rustup default nightly
+          cargo install cargo-fuzz --locked
+      - name: Install FFmpeg development libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswscale-dev
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            image-compression/fuzz/target
+            image-transformation/fuzz/target
+          key: ${{ runner.os }}-${{ github.job }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      - name: Fuzz image-compression
+        working-directory: image-compression
+        run: cargo fuzz run fuzz_decode -- -max_total_time=60
+      - name: Fuzz image-transformation
+        working-directory: image-transformation
+        run: cargo fuzz run fuzz_transform -- -max_total_time=60
