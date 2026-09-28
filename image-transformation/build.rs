@@ -41,6 +41,10 @@ fn main() {
         .allowlist_type("AV.*|av.*")
         .allowlist_var("av.*|AV.*");
 
+    if cfg!(all(target_os = "windows", target_env = "gnu")) {
+        builder = builder.clang_arg("--target=x86_64-w64-mingw32");
+    }
+
     for path in &include_paths {
         builder = builder.clang_arg(format!("-I{}", path.display()));
     }
