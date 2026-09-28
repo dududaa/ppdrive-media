@@ -8,9 +8,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.MD"
 
 [dependencies]
-ppdrive.workspace = true
 serde = { workspace = true, features = ["derive"] }
-serde_json.workspace = true
 
 [build-dependencies]
 bindgen = "0.73"
@@ -18,6 +16,4 @@ pkg-config = "0.3"
 
 [lib]
 name = "image_compression"
-crate-type = ["cdylib", "lib"]
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }
+crate-type = ["lib"]

@@ -145,7 +145,7 @@ pub(crate) fn encode_prepared(
         width: None,
         height: None,
     };
-    if frame.width() == width && frame.height() == height && frame.format() == dst_fmt as i32 {
+    if frame.width() == width && frame.height() == height && frame.format() == dst_fmt {
         encode(frame, &options, &spec)
     } else {
         let converted = resize::convert(frame, width, height, dst_fmt)?;

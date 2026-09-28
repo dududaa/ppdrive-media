@@ -186,10 +186,11 @@ cargo fuzz run fuzz_decode            # smoke run: -- -max_total_time=60
 Artifacts follow `ppdrive-<package-name>-<os>-<arch>.<ext>` (`.zip`
 on Windows, `.tar.gz` otherwise), for example
 `ppdrive-image-compression-linux-x86_64.tar.gz`. Each archive
-contains the `libimage_compression` ppdrive plugin cdylib, the
-`compress` example CLI and this README. FFmpeg shared libraries are
-**not** bundled (licensing) — the target machine needs its own
-FFmpeg installation at runtime.
+contains the plugin cdylib renamed to
+`ppdrive-image-compression-<os>-<arch>.<ext>` (ppdrive's plugin
+library naming), the `compress` example CLI and this README. FFmpeg
+shared libraries are **not** bundled (licensing) — the target machine
+needs its own FFmpeg installation at runtime.
 
 ## License
 

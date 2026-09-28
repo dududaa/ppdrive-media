@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["image-compression", "image-transformation"]
+members = ["image-compression", "image-compression/plugin", "image-transformation"]
 
 [workspace.dependencies]
 image-compression = { path = "image-compression", package = "ppdrive-image-compression" }

@@ -1,0 +1,17 @@
+[package]
+name = "ppdrive-image-compression-plugin"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+description = "ppdrive plugin cdylib entry point for ppdrive-image-compression"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+image-compression.workspace = true
+ppdrive.workspace = true
+serde_json.workspace = true
+
+[lib]
+name = "image_compression_plugin"
+crate-type = ["cdylib"]

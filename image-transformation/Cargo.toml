@@ -20,6 +20,3 @@ pkg-config = "0.3"
 [lib]
 name = "image_transformation"
 crate-type = ["cdylib", "lib"]
-
-[lints.rust]
-unexpected_cfgs = { level = "warn", check-cfg = ["cfg(fuzzing)"] }

@@ -1203,8 +1203,15 @@ version = "0.1.0"
 dependencies = [
  "bindgen",
  "pkg-config",
- "ppdrive",
  "serde",
+]
+
+[[package]]
+name = "ppdrive-image-compression-plugin"
+version = "0.1.0"
+dependencies = [
+ "ppdrive",
+ "ppdrive-image-compression",
  "serde_json",
 ]
 

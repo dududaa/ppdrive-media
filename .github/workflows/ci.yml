@@ -49,7 +49,7 @@ jobs:
         include:
           - name: ubuntu-24.04-system-ffmpeg-6.1
             os: ubuntu-24.04
-          - name: macos-brew-ffmpeg
+          - name: macos-brew-ffmpeg-full
             os: macos-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,7 +64,10 @@ jobs:
           sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswscale-dev
       - name: Install FFmpeg (macOS)
         if: runner.os == 'macOS'
-        run: brew install ffmpeg pkg-config
+        run: |
+          brew install ffmpeg-full pkg-config
+          echo "PKG_CONFIG_PATH=$(brew --prefix ffmpeg-full)/lib/pkgconfig" >> "$GITHUB_ENV"
+          echo "$(brew --prefix ffmpeg-full)/bin" >> "$GITHUB_PATH"
       - name: Cache cargo
         uses: actions/cache@v4
         with:

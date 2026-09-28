@@ -35,10 +35,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust
+      - name: Install Rust (Linux, macOS)
+        if: runner.os != 'Windows'
         run: |
           rustup toolchain install stable --profile minimal
           rustup default stable
+
+      - name: Install Rust (Windows/GNU host)
+        if: runner.os == 'Windows'
+        run: |
+          rustup toolchain install stable-x86_64-pc-windows-gnu --profile minimal
+          rustup default stable-x86_64-pc-windows-gnu
 
       - name: Install FFmpeg (Linux)
         if: runner.os == 'Linux'
@@ -63,7 +70,9 @@ jobs:
 
       - name: Build (Linux, macOS)
         if: runner.os != 'Windows'
-        run: cargo build --release --workspace --examples --locked
+        run: |
+          cargo build --release --locked --workspace
+          cargo build --release --locked --workspace --examples
 
       - name: Build (Windows/MSYS2)
         if: runner.os == 'Windows'
@@ -72,8 +81,8 @@ jobs:
           export PATH="/mingw64/bin:$PATH"
           export PKG_CONFIG_PATH="/mingw64/lib/pkgconfig"
           export CARGO_TARGET_X86_64_UNKNOWN_WINDOWS_GNU_LINKER=gcc
-          rustup target add x86_64-pc-windows-gnu
-          cargo build --release --workspace --examples --locked --target x86_64-pc-windows-gnu
+          cargo build --release --locked --workspace
+          cargo build --release --locked --workspace --examples
 
       - name: Package
         shell: bash
@@ -81,20 +90,16 @@ jobs:
           set -euo pipefail
           os="${{ matrix.os_name }}"
           arch="${{ matrix.arch }}"
-          target="${{ matrix.target }}"
 
           if [ "$os" = "windows" ]; then
-            release_dir="target/${target}/release"
             lib_ext="dll"
             bin_ext=".exe"
             archive_ext="zip"
           elif [ "$os" = "macos" ]; then
-            release_dir="target/release"
             lib_ext="dylib"
             bin_ext=""
             archive_ext="tar.gz"
           else
-            release_dir="target/release"
             lib_ext="so"
             bin_ext=""
             archive_ext="tar.gz"
@@ -103,7 +108,7 @@ jobs:
           package() {
             pkg="$1"
             bin="$2"
-            lib="${pkg//-/_}"
+            lib="$3"
             if [ "$os" = "windows" ]; then
               lib_file="${lib}.${lib_ext}"
               tar=(/c/Windows/System32/tar.exe -a -cf)
@@ -114,14 +119,14 @@ jobs:
             name="ppdrive-${pkg}-${os}-${arch}"
             rm -rf "$name"
             mkdir -p "$name"
-            cp "${release_dir}/${lib_file}" "$name/"
-            cp "${release_dir}/examples/${bin}${bin_ext}" "$name/"
+            cp "target/release/${lib_file}" "$name/${name}.${lib_ext}"
+            cp "target/release/examples/${bin}${bin_ext}" "$name/"
             cp "${pkg}/README.MD" "$name/README.MD"
             "${tar[@]}" "${name}.${archive_ext}" "$name"
           }
 
-          package image-compression compress
-          package image-transformation transform
+          package image-compression compress image_compression_plugin
+          package image-transformation transform image_transformation
           ls -la
 
       - uses: actions/upload-artifact@v4
