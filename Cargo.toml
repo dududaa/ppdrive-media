@@ -9,6 +9,7 @@ members = [
     "image-transformation",
     "video-compression",
     "video-compression/plugin",
+    "video-transformation",
 ]
 
 [workspace.dependencies]

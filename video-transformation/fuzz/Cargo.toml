@@ -1,0 +1,23 @@
+[package]
+name = "ppdrive-video-transformation-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+ppdrive-video-transformation = { path = ".." }
+serde_json = "1"
+
+[[bin]]
+name = "fuzz_edit"
+path = "fuzz_targets/fuzz_edit.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]
