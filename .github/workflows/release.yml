@@ -149,3 +149,5 @@ jobs:
           fi
           gh release upload "$GITHUB_REF_NAME" dist/* \
             --repo "$GITHUB_REPOSITORY" --clobber
+          gh release edit "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" --draft=false
