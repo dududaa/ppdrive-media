@@ -110,7 +110,8 @@ jobs:
     runs-on: ubuntu-24.04
     # Fuzzing exercises the FFmpeg libraries themselves; a crash found in
     # upstream FFmpeg code should surface as a visible (but non-blocking)
-    # signal rather than gating every pull request.
+    # signal rather than gating every pull request. The tolerance lives on
+    # each fuzz step so one crashing target cannot skip the ones after it.
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -138,19 +139,25 @@ jobs:
           key: ${{ runner.os }}-${{ github.job }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Fuzz audio-conversion
         working-directory: audio-conversion
+        continue-on-error: true
         run: cargo fuzz run fuzz_convert -- -max_total_time=60
       - name: Fuzz audio-effects
         working-directory: audio-effects
+        continue-on-error: true
         run: cargo fuzz run fuzz_apply -- -max_total_time=60
       - name: Fuzz image-compression
         working-directory: image-compression
+        continue-on-error: true
         run: cargo fuzz run fuzz_decode -- -max_total_time=60
       - name: Fuzz image-transformation
         working-directory: image-transformation
+        continue-on-error: true
         run: cargo fuzz run fuzz_transform -- -max_total_time=60
       - name: Fuzz video-compression
         working-directory: video-compression
+        continue-on-error: true
         run: cargo fuzz run fuzz_transcode -- -max_total_time=60
       - name: Fuzz video-transformation
         working-directory: video-transformation
+        continue-on-error: true
         run: cargo fuzz run fuzz_edit -- -max_total_time=60
