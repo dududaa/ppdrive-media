@@ -1,0 +1,22 @@
+[package]
+name = "ppdrive-audio-conversion-fuzz"
+version = "0.0.0"
+publish = false
+edition = "2024"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+ppdrive-audio-conversion = { path = ".." }
+
+[[bin]]
+name = "fuzz_convert"
+path = "fuzz_targets/fuzz_convert.rs"
+test = false
+doc = false
+bench = false
+
+[workspace]
+members = ["."]

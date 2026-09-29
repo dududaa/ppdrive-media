@@ -1198,6 +1198,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "ppdrive-audio-conversion"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ppdrive-audio-conversion-plugin"
+version = "0.1.0"
+dependencies = [
+ "ppdrive",
+ "ppdrive-audio-conversion",
+ "serde_json",
+]
+
+[[package]]
 name = "ppdrive-image-compression"
 version = "0.1.0"
 dependencies = [

@@ -1,8 +1,15 @@
 [workspace]
 resolver = "3"
-members = ["image-compression", "image-compression/plugin", "image-transformation"]
+members = [
+    "audio-conversion",
+    "audio-conversion/plugin",
+    "image-compression",
+    "image-compression/plugin",
+    "image-transformation",
+]
 
 [workspace.dependencies]
+audio-conversion = { path = "audio-conversion", version = "0.1.0", package = "ppdrive-audio-conversion" }
 image-compression = { path = "image-compression", package = "ppdrive-image-compression" }
 ppdrive = "0.2.0"
 serde = "1.0.229"

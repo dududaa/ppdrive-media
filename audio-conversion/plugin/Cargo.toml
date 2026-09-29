@@ -1,0 +1,17 @@
+[package]
+name = "ppdrive-audio-conversion-plugin"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+description = "ppdrive plugin cdylib entry point for ppdrive-audio-conversion"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+audio-conversion.workspace = true
+ppdrive.workspace = true
+serde_json.workspace = true
+
+[lib]
+name = "audio_conversion_plugin"
+crate-type = ["cdylib"]
