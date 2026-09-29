@@ -108,6 +108,10 @@ jobs:
             "ppdrive-audio-conversion-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}audio_effects.${lib_ext}" \
             "ppdrive-audio-effects-${os}-${arch}.${lib_ext}"
+          mv "target/release/${prefix}video_compression_plugin.${lib_ext}" \
+            "ppdrive-video-compression-${os}-${arch}.${lib_ext}"
+          mv "target/release/${prefix}video_transformation.${lib_ext}" \
+            "ppdrive-video-transformation-${os}-${arch}.${lib_ext}"
           ls -la ppdrive-*
 
       - uses: actions/upload-artifact@v4
@@ -132,6 +136,18 @@ jobs:
         with:
           name: ppdrive-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}
           path: ppdrive-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ppdrive-video-compression-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-video-compression-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ppdrive-video-transformation-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-video-transformation-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
   release:
