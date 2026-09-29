@@ -51,7 +51,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libavfilter-dev libswscale-dev
+          sudo apt-get install -y pkg-config libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavfilter-dev libswresample-dev
 
       - name: Install FFmpeg (macOS)
         if: runner.os == 'macOS'
@@ -104,6 +104,10 @@ jobs:
             "ppdrive-image-compression-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}image_transformation.${lib_ext}" \
             "ppdrive-image-transformation-${os}-${arch}.${lib_ext}"
+          mv "target/release/${prefix}audio_conversion_plugin.${lib_ext}" \
+            "ppdrive-audio-conversion-${os}-${arch}.${lib_ext}"
+          mv "target/release/${prefix}audio_effects.${lib_ext}" \
+            "ppdrive-audio-effects-${os}-${arch}.${lib_ext}"
           ls -la ppdrive-*
 
       - uses: actions/upload-artifact@v4
@@ -116,6 +120,18 @@ jobs:
         with:
           name: ppdrive-image-transformation-${{ matrix.os_name }}-${{ matrix.arch }}
           path: ppdrive-image-transformation-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ppdrive-audio-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-audio-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          if-no-files-found: error
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ppdrive-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
   release:
