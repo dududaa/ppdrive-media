@@ -70,9 +70,7 @@ jobs:
 
       - name: Build (Linux, macOS)
         if: runner.os != 'Windows'
-        run: |
-          cargo build --release --locked --workspace
-          cargo build --release --locked --workspace --examples
+        run: cargo build --release --locked --workspace
 
       - name: Build (Windows/MSYS2)
         if: runner.os == 'Windows'
@@ -83,7 +81,6 @@ jobs:
           export PKG_CONFIG="/c/msys64/mingw64/bin/pkg-config.exe"
           export CARGO_TARGET_X86_64_UNKNOWN_WINDOWS_GNU_LINKER=gcc
           cargo build --release --locked --workspace
-          cargo build --release --locked --workspace --examples
 
       - name: Package
         shell: bash
@@ -94,41 +91,20 @@ jobs:
 
           if [ "$os" = "windows" ]; then
             lib_ext="dll"
-            bin_ext=".exe"
-            archive_ext="zip"
+            prefix=""
           elif [ "$os" = "macos" ]; then
             lib_ext="dylib"
-            bin_ext=""
-            archive_ext="tar.gz"
+            prefix="lib"
           else
             lib_ext="so"
-            bin_ext=""
-            archive_ext="tar.gz"
+            prefix="lib"
           fi
 
-          package() {
-            pkg="$1"
-            bin="$2"
-            lib="$3"
-            if [ "$os" = "windows" ]; then
-              lib_file="${lib}.${lib_ext}"
-              tar=(/c/Windows/System32/tar.exe -a -cf)
-            else
-              lib_file="lib${lib}.${lib_ext}"
-              tar=(tar -czf)
-            fi
-            name="ppdrive-${pkg}-${os}-${arch}"
-            rm -rf "$name"
-            mkdir -p "$name"
-            cp "target/release/${lib_file}" "$name/${name}.${lib_ext}"
-            cp "target/release/examples/${bin}${bin_ext}" "$name/"
-            cp "${pkg}/README.MD" "$name/README.MD"
-            "${tar[@]}" "${name}.${archive_ext}" "$name"
-          }
-
-          package image-compression compress image_compression_plugin
-          package image-transformation transform image_transformation
-          ls -la
+          mv "target/release/${prefix}image_compression_plugin.${lib_ext}" \
+            "ppdrive-image-compression-${os}-${arch}.${lib_ext}"
+          mv "target/release/${prefix}image_transformation.${lib_ext}" \
+            "ppdrive-image-transformation-${os}-${arch}.${lib_ext}"
+          ls -la ppdrive-*
 
       - uses: actions/upload-artifact@v4
         with:
@@ -162,7 +138,12 @@ jobs:
         run: |
           set -euo pipefail
           ls -la dist
-          if ! gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+          if gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            for asset in $(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json assets --jq '.assets[].name'); do
+              gh release delete-asset "$GITHUB_REF_NAME" "$asset" \
+                --repo "$GITHUB_REPOSITORY" --yes
+            done
+          else
             gh release create "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" \
               --title "$GITHUB_REF_NAME" --generate-notes
           fi

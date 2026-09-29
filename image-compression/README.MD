@@ -183,14 +183,12 @@ cargo fuzz run fuzz_decode            # smoke run: -- -max_total_time=60
 | `x86_64-apple-darwin` | macOS Intel (`macos-15-intel`) | Homebrew FFmpeg |
 | `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
 
-Artifacts follow `ppdrive-<package-name>-<os>-<arch>.<ext>` (`.zip`
-on Windows, `.tar.gz` otherwise), for example
-`ppdrive-image-compression-linux-x86_64.tar.gz`. Each archive
-contains the plugin cdylib renamed to
-`ppdrive-image-compression-<os>-<arch>.<ext>` (ppdrive's plugin
-library naming), the `compress` example CLI and this README. FFmpeg
-shared libraries are **not** bundled (licensing) — the target machine
-needs its own FFmpeg installation at runtime.
+Each release asset is the plugin cdylib itself (no archive), renamed to
+`ppdrive-image-compression-<os>-<arch>.<ext>` (ppdrive's plugin library
+naming), for example
+`ppdrive-image-compression-linux-x86_64.so`. FFmpeg shared libraries are
+**not** bundled (licensing) — the target machine needs its own FFmpeg
+installation at runtime.
 
 ## License
 
