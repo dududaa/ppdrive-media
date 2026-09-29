@@ -234,7 +234,7 @@ impl FilterGraph {
         if ret == 0 {
             return Ok(Some(out));
         }
-        if ret == AVERROR_EAGAIN_CODE || ret == AVERROR_EOF_CODE {
+        if is_eagain(ret) || ret == AVERROR_EOF_CODE {
             return Ok(None);
         }
         Err(err_from_code(ret))
