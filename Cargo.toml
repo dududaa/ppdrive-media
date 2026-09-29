@@ -3,6 +3,7 @@ resolver = "3"
 members = [
     "audio-conversion",
     "audio-conversion/plugin",
+    "audio-effects",
     "image-compression",
     "image-compression/plugin",
     "image-transformation",
