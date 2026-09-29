@@ -5,6 +5,21 @@ use crate::ffi;
 use crate::ffi::encode::{EncodedPacket, EncoderParams, InputParams};
 use std::ffi::c_void;
 
+/// Highest sample rate the crate will accept from a decoded stream.
+///
+/// Corrupt container headers can report absurd rates (gigahertz-range
+/// values seen in the wild); feeding those into the resampler makes it
+/// size multi-gigabyte buffers. Every legitimate codec tops out well
+/// below this (FFmpeg's own decoders cap at 768 kHz).
+const MAX_SAMPLE_RATE: u32 = 768_000;
+
+/// Highest channel count the crate will accept from a decoded stream.
+///
+/// Legitimate content is mono/stereo with rare up to 8–16 channel
+/// layouts; this bound keeps corrupt headers from inflating resampler
+/// and encoder allocations.
+const MAX_CHANNELS: u8 = 64;
+
 /// Stream-level properties of decoded audio, read from the first frame.
 ///
 /// Produced by [`DecodedAudio::params`]; used by downstream consumers
@@ -58,7 +73,11 @@ impl DecodedAudio {
         let first = frames.first().ok_or(Error::InvalidInput)?;
         let sample_rate = first.sample_rate();
         let channels = first.channels();
-        if sample_rate == 0 || channels == 0 {
+        if sample_rate == 0
+            || sample_rate > MAX_SAMPLE_RATE
+            || channels == 0
+            || channels > MAX_CHANNELS
+        {
             return Err(Error::InvalidInput);
         }
         for frame in &frames {
@@ -234,5 +253,16 @@ mod tests {
             unsafe { DecodedAudio::from_raw_frames(null) }.unwrap_err(),
             Error::InvalidInput
         );
+    }
+
+    #[test]
+    fn corrupt_header_with_absurd_sample_rate_is_invalid() {
+        let payload: &[u8] = &[
+            b'C', b'R', b'Y', b'O', b'_', b'A', b'P', b'C', 0x98, 0x98, 0x98, 0x98, 0x98, 0x98,
+            0x2a, 0x98, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54, 0x54,
+            0x54, 0x98, 0x98, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x0a,
+        ];
+        let err = DecodedAudio::decode(payload).unwrap_err();
+        assert_eq!(err, Error::InvalidInput);
     }
 }
