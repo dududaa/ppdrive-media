@@ -1259,6 +1259,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "ppdrive-video-compression"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ppdrive-video-compression-plugin"
+version = "0.1.0"
+dependencies = [
+ "ppdrive",
+ "ppdrive-video-compression",
+ "serde_json",
+]
+
+[[package]]
 name = "ppv-lite86"
 version = "0.2.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"

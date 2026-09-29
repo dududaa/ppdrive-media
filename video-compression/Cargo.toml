@@ -1,0 +1,22 @@
+[package]
+name = "ppdrive-video-compression"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94"
+description = "High-performance video compression library with FFmpeg as the native execution engine"
+license = "MIT OR Apache-2.0"
+readme = "README.MD"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[build-dependencies]
+bindgen = "0.73"
+pkg-config = "0.3"
+
+[lib]
+name = "video_compression"
+crate-type = ["lib"]
