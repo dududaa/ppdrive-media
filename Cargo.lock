@@ -1260,6 +1260,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ppdrive-media-streaming"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
+ "ppdrive-audio-conversion",
+ "ppdrive-video-conversion",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "ppdrive-video-conversion"
 version = "0.1.0"
 dependencies = [
