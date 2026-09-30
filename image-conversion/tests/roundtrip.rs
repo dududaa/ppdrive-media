@@ -24,6 +24,7 @@ fn convert(
             quality,
             width,
             height,
+            ..Default::default()
         },
     )
 }
@@ -150,5 +151,81 @@ fn out_of_range_quality_is_clamped() {
 fn jpeg_output_for_odd_dimensions() {
     let input = fixture("input.png");
     let output = convert(&input, ImageFormat::Jpeg, 80, Some(63), Some(47)).unwrap();
+    assert!(is_jpeg(&output));
+}
+
+#[test]
+fn scale_resizes_output() {
+    let input = fixture("input.png");
+    let converter = ImageConverter::new().unwrap();
+    let output = converter
+        .convert(
+            &input,
+            ConversionOptions {
+                format: ImageFormat::Png,
+                scale: Some(0.25),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert_eq!(png_dimensions(&output), (40, 30));
+}
+
+#[test]
+fn explicit_dimensions_win_over_scale() {
+    let input = fixture("input.png");
+    let converter = ImageConverter::new().unwrap();
+    let output = converter
+        .convert(
+            &input,
+            ConversionOptions {
+                format: ImageFormat::Png,
+                width: Some(64),
+                scale: Some(0.25),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert_eq!(png_dimensions(&output), (64, 48));
+}
+
+#[test]
+fn avif_effort_endpoints_encode() {
+    let input = fixture("input.png");
+    let converter = ImageConverter::new().unwrap();
+    for effort in [0, 100] {
+        let output = converter
+            .convert(
+                &input,
+                ConversionOptions {
+                    format: ImageFormat::Avif,
+                    quality: 70,
+                    effort: Some(effort),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert!(is_avif(&output), "invalid avif at effort {effort}");
+    }
+}
+
+#[test]
+fn max_bytes_limits_jpeg_size() {
+    let input = fixture("input.png");
+    let converter = ImageConverter::new().unwrap();
+    let full = convert(&input, ImageFormat::Jpeg, 95, None, None).unwrap();
+    let budget = full.len() * 2 / 3;
+    let output = converter
+        .convert(
+            &input,
+            ConversionOptions {
+                format: ImageFormat::Jpeg,
+                quality: 95,
+                max_bytes: Some(budget as u64),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert!(output.len() <= budget);
     assert!(is_jpeg(&output));
 }

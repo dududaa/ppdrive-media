@@ -66,17 +66,43 @@ impl ImageFormat {
 ///   JPEG and AVIF additionally round dimensions up to even values
 ///   (chroma-subsampling requirement), e.g. `63×47` becomes `64×48`.
 ///
+/// - **`scale`** — proportional resize factor applied to the source
+///   dimensions (`round(source × scale)`, minimum 1 px on each axis).
+///   Used only when *both* `width` and `height` are `None`; when either
+///   explicit dimension is set, those win and `scale` is ignored.
+///   Non-finite, zero or negative factors, or factors that would
+///   produce dimensions beyond `u32`, are rejected with
+///   [`crate::Error::InvalidInput`]. Default: `None`.
+///
+/// - **`effort`** — encoding effort on a `0..=100` scale (clamped to
+///   `100` internally); higher is slower and usually smaller at equal
+///   `quality`. Honoured by AVIF only, where it maps to AV1 `cpu-used`
+///   (`8` at effort 0 → `0` at effort 100). JPEG, PNG and WebP expose
+///   no effort knob through their FFmpeg encoders and ignore it.
+///   Default: `None` (encoder default).
+///
+/// - **`max_bytes`** — maximum output size in bytes. The converter
+///   encodes at `quality` first; if the result is too large it
+///   binary-searches lower qualities (at most seven extra encodes)
+///   for the highest quality that fits. `Some(0)` is rejected with
+///   [`crate::Error::InvalidInput`]. When even quality 0 cannot fit
+///   the budget, [`crate::Error::TargetSizeUnreachable`] is returned.
+///   Default: `None` (no size target).
+///
 /// # Example
 ///
 /// ```text
 /// ConversionOptions {
 ///     format: ImageFormat::WebP,
 ///     quality: 80,
-///     width: Some(800),
-///     height: None,   // keep aspect ratio at 800px wide
+///     width: None,
+///     height: None,
+///     scale: Some(0.5),   // half-size output
+///     effort: None,
+///     max_bytes: None,
 /// }
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct ConversionOptions {
     /// Output format. Default: [`ImageFormat::Jpeg`].
     pub format: ImageFormat,
@@ -89,16 +115,94 @@ pub struct ConversionOptions {
     /// Target height in pixels; `None` keeps the source height (or derives
     /// it from `width`). Default: `None`.
     pub height: Option<u32>,
+    /// Proportional resize factor; used only when `width` and `height`
+    /// are both `None`. Default: `None`.
+    pub scale: Option<f32>,
+    /// Encoding effort on a 0–100 scale (AVIF only). Default: `None`.
+    pub effort: Option<u8>,
+    /// Maximum output size in bytes; `None` imposes no budget.
+    /// Default: `None`.
+    pub max_bytes: Option<u64>,
 }
 
 impl Default for ConversionOptions {
-    /// JPEG at quality 80, original dimensions.
+    /// JPEG at quality 80, original dimensions, encoder defaults and
+    /// no size budget.
     fn default() -> Self {
         ConversionOptions {
             format: ImageFormat::Jpeg,
             quality: 80,
             width: None,
             height: None,
+            scale: None,
+            effort: None,
+            max_bytes: None,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_is_jpeg_quality_80_with_no_optional_knobs() {
+        let default = ConversionOptions::default();
+        assert_eq!(default.format, ImageFormat::Jpeg);
+        assert_eq!(default.quality, 80);
+        assert_eq!(default.width, None);
+        assert_eq!(default.height, None);
+        assert_eq!(default.scale, None);
+        assert_eq!(default.effort, None);
+        assert_eq!(default.max_bytes, None);
+    }
+
+    #[test]
+    fn options_deserialize_from_partial_json() {
+        let opts: ConversionOptions = serde_json::from_value(serde_json::json!({
+            "format": "WebP",
+            "quality": 60
+        }))
+        .unwrap();
+        assert_eq!(opts.format, ImageFormat::WebP);
+        assert_eq!(opts.quality, 60);
+        assert_eq!(opts.width, None);
+        assert_eq!(opts.height, None);
+        assert_eq!(opts.scale, None);
+        assert_eq!(opts.effort, None);
+        assert_eq!(opts.max_bytes, None);
+    }
+
+    #[test]
+    fn options_deserialize_new_fields() {
+        let opts: ConversionOptions = serde_json::from_value(serde_json::json!({
+            "format": "Avif",
+            "quality": 90,
+            "width": 800,
+            "height": null,
+            "scale": 0.5,
+            "effort": 40,
+            "max_bytes": 65536
+        }))
+        .unwrap();
+        assert_eq!(opts.scale, Some(0.5));
+        assert_eq!(opts.effort, Some(40));
+        assert_eq!(opts.max_bytes, Some(65536));
+    }
+
+    #[test]
+    fn options_reject_invalid_json() {
+        assert!(
+            serde_json::from_value::<ConversionOptions>(serde_json::json!({"quality": 80}))
+                .is_err()
+        );
+        assert!(
+            serde_json::from_value::<ConversionOptions>(serde_json::json!({
+                "format": "webp",
+                "quality": "loud"
+            }))
+            .is_err()
+        );
+        assert!(serde_json::from_value::<ConversionOptions>(serde_json::json!("nope")).is_err());
     }
 }

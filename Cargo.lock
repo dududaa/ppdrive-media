@@ -1235,6 +1235,7 @@ dependencies = [
  "bindgen",
  "pkg-config",
  "serde",
+ "serde_json",
 ]
 
 [[package]]

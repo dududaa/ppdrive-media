@@ -23,6 +23,9 @@ pub enum Error {
     /// notably AVIF *input* (FFmpeg has no AVIF demuxer) and unknown
     /// output extensions.
     UnsupportedFormat,
+    /// `ConversionOptions::max_bytes` was set, but even the smallest
+    /// output (quality 0) exceeds the requested budget.
+    TargetSizeUnreachable,
 }
 
 impl Error {
@@ -39,6 +42,9 @@ impl fmt::Display for Error {
             Error::EncoderNotFound => write!(f, "no encoder available for this output format"),
             Error::InvalidInput => write!(f, "invalid or unreadable input image"),
             Error::UnsupportedFormat => write!(f, "unsupported image format"),
+            Error::TargetSizeUnreachable => {
+                write!(f, "output cannot fit the requested maximum size")
+            }
         }
     }
 }

@@ -9,6 +9,10 @@ Options:
   --quality <0-100>              Quality (default: 80)
   --width <pixels>               Target width
   --height <pixels>              Target height
+  --scale <factor>               Proportional resize (e.g. 0.5; ignored if
+                                 --width/--height is given)
+  --effort <0-100>               Encoding effort, AVIF only (default: encoder default)
+  --max-bytes <bytes>            Shrink quality until the output fits this size
   -h, --help                     Show this help
 ";
 
@@ -59,6 +63,24 @@ fn parse_args() -> Result<Args, String> {
                     .parse()
                     .map_err(|_| "height must be an integer".to_string())?;
                 options.height = Some(value);
+            }
+            "--scale" => {
+                let value: f32 = take_value("--scale")?
+                    .parse()
+                    .map_err(|_| "scale must be a number".to_string())?;
+                options.scale = Some(value);
+            }
+            "--effort" => {
+                let value: u8 = take_value("--effort")?
+                    .parse()
+                    .map_err(|_| "effort must be an integer 0-100".to_string())?;
+                options.effort = Some(value.min(100));
+            }
+            "--max-bytes" => {
+                let value: u64 = take_value("--max-bytes")?
+                    .parse()
+                    .map_err(|_| "max-bytes must be an integer".to_string())?;
+                options.max_bytes = Some(value);
             }
             _ if arg.starts_with('-') => {
                 return Err(format!("unknown option: {arg}"));

@@ -41,7 +41,7 @@ and emits version cfgs so one crate builds across FFmpeg 6.x → 9.x.
 
 ```bash
 cargo build
-cargo test          # 28 tests
+cargo test          # 49 tests
 cargo clippy --all-targets
 cargo run --example convert -- input.png output.webp --quality 85
 ```
@@ -74,6 +74,7 @@ let output = converter.convert(
         quality: 80,
         width: Some(800),
         height: Some(600),
+        ..Default::default()
     },
 )?;
 ```
@@ -86,6 +87,9 @@ let output = converter.convert(
 | `quality` | `u8` | `80` | 0–100; values above 100 are clamped to 100 |
 | `width` | `Option<u32>` | `None` | Target width in pixels |
 | `height` | `Option<u32>` | `None` | Target height in pixels |
+| `scale` | `Option<f32>` | `None` | Proportional resize factor (used only when `width`/`height` are both `None`) |
+| `effort` | `Option<u8>` | `None` | Encoding effort 0–100; AVIF only (see below) |
+| `max_bytes` | `Option<u64>` | `None` | Shrink quality until the output fits this size |
 
 ### Quality mapping (per format)
 
@@ -98,12 +102,31 @@ let output = converter.convert(
 
 ### Resizing
 
-- `width`/`height` both `None` → keep input dimensions
-- only one given → other derived to **preserve aspect ratio**
+- `width`/`height` both `None` and no `scale` → keep input dimensions
+- only `width` or only `height` given → other derived to **preserve aspect ratio**
 - both given → **exact** size (aspect ratio not preserved)
-- `0` is rejected with `Error::InvalidInput`
+- `scale: Some(s)` with neither dimension set → `round(source × s)`,
+  minimum 1 px; explicit dimensions win over `scale`
+- non-finite, zero or negative scale, and `0` dimensions, are rejected
+  with `Error::InvalidInput`
 - JPEG/AVIF round dimensions **up to even** (chroma subsampling),
   e.g. `63×47 → 64×48`
+
+### Effort
+
+`effort: 0–100` (clamped), higher is slower and usually smaller at
+equal quality. Only **AVIF** honours it — it maps to AV1 `cpu-used`
+(`8` at effort 0 → `0` at effort 100). JPEG, PNG and WebP expose no
+effort knob through their FFmpeg encoders and ignore the value.
+`None` leaves the encoder default (AV1 `cpu-used` 1).
+
+### Size budget
+
+With `max_bytes: Some(n)` the converter encodes at `quality` first and,
+if too large, binary-searches lower qualities for the highest one that
+fits (at most eight encodes total; the image is resized only once).
+`Some(0)` is rejected with `InvalidInput`; when even quality 0 cannot
+fit, `TargetSizeUnreachable` is returned.
 
 ### Alpha
 
@@ -117,8 +140,9 @@ channel; JPEG and AVIF outputs are opaque.
 | `FfmpegError(msg)` | FFmpeg call failed (`av_strerror` message) |
 | `DecoderNotFound` | no decoder for the input image in this FFmpeg |
 | `EncoderNotFound` | output encoder missing (e.g. AVIF without libaom) |
-| `InvalidInput` | empty input or zero width/height option |
+| `InvalidInput` | empty input, zero width/height, zero `max_bytes`, or invalid `scale` |
 | `UnsupportedFormat` | AVIF **input** (FFmpeg has no AVIF demuxer), unknown output extension |
+| `TargetSizeUnreachable` | `max_bytes` cannot be met even at quality 0 |
 
 ## Example CLI
 
@@ -130,12 +154,17 @@ Options:
   --quality <0-100>              Quality (default: 80)
   --width <pixels>               Target width
   --height <pixels>              Target height
+  --scale <factor>               Proportional resize (e.g. 0.5; ignored if
+                                 --width/--height is given)
+  --effort <0-100>               Encoding effort, AVIF only (default: encoder default)
+  --max-bytes <bytes>            Shrink quality until the output fits this size
   -h, --help                     Show this help
 ```
 
 ```bash
 cargo run --example convert -- photo.jpg thumb.avif --quality 60 --width 800
 # photo.jpg: 245760 bytes -> thumb.avif: 18432 bytes (7.5%)
+cargo run --example convert -- photo.jpg icon.avif --quality 80 --scale 0.25 --max-bytes 20480
 ```
 
 ## Notes & limitations
@@ -147,7 +176,7 @@ cargo run --example convert -- photo.jpg thumb.avif --quality 60 --width 800
   extension in the CLI).
 - Single images only — no animated GIF/WebP outputs.
 - The `ffi` module is internal; only `ImageConverter`,
-  `ConversionOptions`, `ImageFormat` and `Error` are public.
+  `ConversionOptions`, `Frame`, `ImageFormat` and `Error` are public.
 
 ## Continuous integration
 

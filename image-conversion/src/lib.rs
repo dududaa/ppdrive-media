@@ -17,6 +17,7 @@
 //!         quality: 80,
 //!         width: Some(800),
 //!         height: Some(600),
+//!         ..Default::default()
 //!     },
 //! )?;
 //! # Ok::<(), image_conversion::Error>(())

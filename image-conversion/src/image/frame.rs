@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::ffi;
 use crate::image::options::ImageFormat;
-use crate::image::{decode, encode, resize};
+use crate::image::{decode, encode};
 
 /// A decoded image frame: the safe hand-off point between decoding,
 /// transformation and encoding.
@@ -73,9 +73,12 @@ impl Frame {
     /// dimensions as required by the target format (JPEG/AVIF are
     /// rounded up to even values).
     pub fn encode(&self, format: ImageFormat, quality: u8) -> Result<Vec<u8>, Error> {
-        let spec = encode::spec_for(format);
-        let (width, height) = resize::round_to_even(self.width(), self.height(), spec.force_even);
-        encode::encode_prepared(&self.inner, format, quality, width, height)
+        let options = crate::image::options::ConversionOptions {
+            format,
+            quality,
+            ..Default::default()
+        };
+        encode::encode_prepared(&self.inner, &options, self.width(), self.height())
     }
 
     /// Raw `AVFrame *` for direct FFmpeg interop (filter graphs).

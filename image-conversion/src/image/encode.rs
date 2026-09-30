@@ -68,7 +68,11 @@ impl EncodeSpec {
     }
 }
 
-fn quality_settings(format: ImageFormat, quality: u8) -> (Option<i32>, Vec<(String, String)>) {
+fn quality_settings(
+    format: ImageFormat,
+    quality: u8,
+    effort: Option<u8>,
+) -> (Option<i32>, Vec<(String, String)>) {
     let quality = i32::from(quality.min(100));
     match format {
         ImageFormat::Jpeg => (Some(31 - quality * 29 / 100), Vec::new()),
@@ -88,13 +92,15 @@ fn quality_settings(format: ImageFormat, quality: u8) -> (Option<i32>, Vec<(Stri
         }
         ImageFormat::Avif => {
             let crf = 63 - quality * 63 / 100;
-            (
-                None,
-                vec![
-                    ("crf".to_string(), crf.to_string()),
-                    ("row-mt".to_string(), "1".to_string()),
-                ],
-            )
+            let mut options = vec![
+                ("crf".to_string(), crf.to_string()),
+                ("row-mt".to_string(), "1".to_string()),
+            ];
+            if let Some(effort) = effort {
+                let effort = i32::from(effort.min(100));
+                options.push(("cpu-used".to_string(), (8 - effort * 8 / 100).to_string()));
+            }
+            (None, options)
         }
     }
 }
@@ -109,7 +115,7 @@ pub(crate) fn encode(
         None => find_encoder_by_id(spec.codec_id)?,
     };
 
-    let (qscale, dict_options) = quality_settings(options.format, options.quality);
+    let (qscale, dict_options) = quality_settings(options.format, options.quality, options.effort);
 
     let config = EncodeConfig {
         codec,
@@ -127,30 +133,36 @@ pub(crate) fn encode(
     encoder.finish()
 }
 
-/// Prepares a decoded frame for `format` (even-dimension rounding for
-/// chroma-subsampled targets + pixel-format conversion) and encodes it.
+/// Rounds dimensions for `spec` and converts the frame's pixel format
+/// only when needed. Returns `None` when the frame already has the
+/// target dimensions and pixel format (pass-through).
+pub(crate) fn prepare(
+    frame: &Frame,
+    spec: &EncodeSpec,
+    width: u32,
+    height: u32,
+) -> Result<Option<Frame>, Error> {
+    let (width, height) = resize::round_to_even(width, height, spec.force_even);
+    let dst_fmt = spec.pix_fmt(frame.has_alpha());
+    if frame.width() == width && frame.height() == height && frame.format() == dst_fmt {
+        Ok(None)
+    } else {
+        Ok(Some(resize::convert(frame, width, height, dst_fmt)?))
+    }
+}
+
+/// Prepares a decoded frame for `options.format` (even-dimension
+/// rounding for chroma-subsampled targets + pixel-format conversion)
+/// and encodes it.
 pub(crate) fn encode_prepared(
     frame: &crate::ffi::wrappers::Frame,
-    format: ImageFormat,
-    quality: u8,
+    options: &ConversionOptions,
     width: u32,
     height: u32,
 ) -> Result<Vec<u8>, Error> {
-    let spec = spec_for(format);
-    let (width, height) = resize::round_to_even(width, height, spec.force_even);
-    let dst_fmt = spec.pix_fmt(frame.has_alpha());
-    let options = ConversionOptions {
-        format,
-        quality,
-        width: None,
-        height: None,
-    };
-    if frame.width() == width && frame.height() == height && frame.format() == dst_fmt {
-        encode(frame, &options, &spec)
-    } else {
-        let converted = resize::convert(frame, width, height, dst_fmt)?;
-        encode(&converted, &options, &spec)
-    }
+    let spec = spec_for(options.format);
+    let converted = prepare(frame, &spec, width, height)?;
+    encode(converted.as_ref().unwrap_or(frame), options, &spec)
 }
 
 #[cfg(test)]
@@ -159,39 +171,61 @@ mod tests {
 
     #[test]
     fn jpeg_quality_maps_to_qscale_range() {
-        assert_eq!(quality_settings(ImageFormat::Jpeg, 100).0, Some(2));
-        assert_eq!(quality_settings(ImageFormat::Jpeg, 0).0, Some(31));
-        assert_eq!(quality_settings(ImageFormat::Jpeg, 255).0, Some(2));
+        assert_eq!(quality_settings(ImageFormat::Jpeg, 100, None).0, Some(2));
+        assert_eq!(quality_settings(ImageFormat::Jpeg, 0, None).0, Some(31));
+        assert_eq!(quality_settings(ImageFormat::Jpeg, 255, None).0, Some(2));
     }
 
     #[test]
     fn avif_quality_maps_to_crf_range() {
-        let high = quality_settings(ImageFormat::Avif, 100);
-        let low = quality_settings(ImageFormat::Avif, 0);
+        let high = quality_settings(ImageFormat::Avif, 100, None);
+        let low = quality_settings(ImageFormat::Avif, 0, None);
         assert!(high.1.iter().any(|(k, v)| k == "crf" && v == "0"));
         assert!(low.1.iter().any(|(k, v)| k == "crf" && v == "63"));
     }
 
     #[test]
     fn png_quality_maps_to_compression_level() {
-        let level = quality_settings(ImageFormat::Png, 100).1[0].clone();
+        let level = quality_settings(ImageFormat::Png, 100, None).1[0].clone();
         assert_eq!(level, ("compression_level".to_string(), "9".to_string()));
     }
 
     #[test]
     fn webp_lossless_at_max_quality() {
         assert!(
-            quality_settings(ImageFormat::WebP, 100)
+            quality_settings(ImageFormat::WebP, 100, None)
                 .1
                 .iter()
                 .any(|(k, v)| k == "lossless" && v == "1")
         );
         assert!(
-            !quality_settings(ImageFormat::WebP, 99)
+            !quality_settings(ImageFormat::WebP, 99, None)
                 .1
                 .iter()
                 .any(|(k, _)| k == "lossless")
         );
+    }
+
+    #[test]
+    fn avif_effort_maps_to_cpu_used_range() {
+        let fastest = quality_settings(ImageFormat::Avif, 80, Some(0));
+        let slowest = quality_settings(ImageFormat::Avif, 80, Some(100));
+        let clamped = quality_settings(ImageFormat::Avif, 80, Some(255));
+        let unset = quality_settings(ImageFormat::Avif, 80, None);
+        assert!(fastest.1.iter().any(|(k, v)| k == "cpu-used" && v == "8"));
+        assert!(slowest.1.iter().any(|(k, v)| k == "cpu-used" && v == "0"));
+        assert!(clamped.1.iter().any(|(k, v)| k == "cpu-used" && v == "0"));
+        assert!(!unset.1.iter().any(|(k, _)| k == "cpu-used"));
+    }
+
+    #[test]
+    fn effort_ignored_for_formats_without_a_knob() {
+        for format in [ImageFormat::Jpeg, ImageFormat::Png, ImageFormat::WebP] {
+            assert_eq!(
+                quality_settings(format, 80, Some(100)),
+                quality_settings(format, 80, None)
+            );
+        }
     }
 
     #[test]

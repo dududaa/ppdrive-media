@@ -11,7 +11,7 @@ pub(crate) fn target_dimensions(
         return Err(Error::InvalidInput);
     }
     match (options.width, options.height) {
-        (None, None) => Ok((src_width, src_height)),
+        (None, None) => scaled_dimensions(src_width, src_height, options.scale),
         (Some(width), None) => {
             if width == 0 {
                 return Err(Error::InvalidInput);
@@ -33,6 +33,28 @@ pub(crate) fn target_dimensions(
             Ok((width, height))
         }
     }
+}
+
+fn scaled_dimensions(
+    src_width: u32,
+    src_height: u32,
+    scale: Option<f32>,
+) -> Result<(u32, u32), Error> {
+    let Some(scale) = scale else {
+        return Ok((src_width, src_height));
+    };
+    if !scale.is_finite() || scale <= 0.0 {
+        return Err(Error::InvalidInput);
+    }
+    let width = (f64::from(src_width) * f64::from(scale)).round();
+    let height = (f64::from(src_height) * f64::from(scale)).round();
+    if !width.is_finite() || !height.is_finite() {
+        return Err(Error::InvalidInput);
+    }
+    if width > f64::from(u32::MAX) || height > f64::from(u32::MAX) {
+        return Err(Error::InvalidInput);
+    }
+    Ok((width.max(1.0) as u32, height.max(1.0) as u32))
 }
 
 pub(crate) fn round_to_even(width: u32, height: u32, force_even: bool) -> (u32, u32) {
@@ -100,6 +122,67 @@ mod tests {
         assert!(target_dimensions(160, 120, &opts(Some(0), None)).is_err());
         assert!(target_dimensions(160, 120, &opts(None, Some(0))).is_err());
         assert!(target_dimensions(0, 120, &opts(None, None)).is_err());
+    }
+
+    fn opts_scale(scale: Option<f32>) -> ConversionOptions {
+        ConversionOptions {
+            scale,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn scale_halves_dimensions() {
+        assert_eq!(
+            target_dimensions(160, 120, &opts_scale(Some(0.5))).unwrap(),
+            (80, 60)
+        );
+    }
+
+    #[test]
+    fn scale_rounds_and_clamps_to_one_pixel() {
+        assert_eq!(
+            target_dimensions(161, 121, &opts_scale(Some(0.5))).unwrap(),
+            (81, 61)
+        );
+        assert_eq!(
+            target_dimensions(160, 120, &opts_scale(Some(0.001))).unwrap(),
+            (1, 1)
+        );
+    }
+
+    #[test]
+    fn scale_can_upscale() {
+        assert_eq!(
+            target_dimensions(160, 120, &opts_scale(Some(2.0))).unwrap(),
+            (320, 240)
+        );
+    }
+
+    #[test]
+    fn scale_ignored_when_explicit_dimensions_set() {
+        assert_eq!(
+            target_dimensions(
+                160,
+                120,
+                &ConversionOptions {
+                    width: Some(64),
+                    scale: Some(0.5),
+                    ..Default::default()
+                }
+            )
+            .unwrap(),
+            (64, 48)
+        );
+    }
+
+    #[test]
+    fn invalid_scale_rejected() {
+        assert!(target_dimensions(160, 120, &opts_scale(Some(0.0))).is_err());
+        assert!(target_dimensions(160, 120, &opts_scale(Some(-1.0))).is_err());
+        assert!(target_dimensions(160, 120, &opts_scale(Some(f32::NAN))).is_err());
+        assert!(target_dimensions(160, 120, &opts_scale(Some(f32::INFINITY))).is_err());
+        assert!(target_dimensions(160, 120, &opts_scale(Some(1e20))).is_err());
     }
 
     #[test]
