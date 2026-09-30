@@ -1229,7 +1229,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ppdrive-image-compression"
+name = "ppdrive-image-conversion"
 version = "0.1.0"
 dependencies = [
  "bindgen",
@@ -1238,11 +1238,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "ppdrive-image-compression-plugin"
+name = "ppdrive-image-conversion-plugin"
 version = "0.1.0"
 dependencies = [
  "ppdrive",
- "ppdrive-image-compression",
+ "ppdrive-image-conversion",
  "serde_json",
 ]
 
@@ -1253,7 +1253,7 @@ dependencies = [
  "bindgen",
  "pkg-config",
  "ppdrive",
- "ppdrive-image-compression",
+ "ppdrive-image-conversion",
  "serde",
  "serde_json",
 ]

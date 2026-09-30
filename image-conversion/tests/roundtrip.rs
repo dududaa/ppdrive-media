@@ -1,4 +1,4 @@
-use image_compression::{CompressionOptions, ImageCompressor, ImageFormat};
+use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(
@@ -9,17 +9,17 @@ fn fixture(name: &str) -> Vec<u8> {
     .expect("fixture missing")
 }
 
-fn compress(
+fn convert(
     input: &[u8],
     format: ImageFormat,
     quality: u8,
     width: Option<u32>,
     height: Option<u32>,
-) -> Result<Vec<u8>, image_compression::Error> {
-    let compressor = ImageCompressor::new()?;
-    compressor.compress(
+) -> Result<Vec<u8>, image_conversion::Error> {
+    let converter = ImageConverter::new()?;
+    converter.convert(
         input,
-        CompressionOptions {
+        ConversionOptions {
             format,
             quality,
             width,
@@ -60,7 +60,7 @@ fn png_input_to_all_formats() {
         (ImageFormat::WebP, is_webp),
         (ImageFormat::Avif, is_avif),
     ] {
-        let output = compress(&input, format, 80, None, None).unwrap();
+        let output = convert(&input, format, 80, None, None).unwrap();
         assert!(check(&output), "invalid output for {format:?}");
     }
 }
@@ -69,7 +69,7 @@ fn png_input_to_all_formats() {
 fn all_input_formats_to_jpeg() {
     for name in ["input.png", "input.jpg", "input.webp"] {
         let input = fixture(name);
-        let output = compress(&input, ImageFormat::Jpeg, 80, None, None).unwrap();
+        let output = convert(&input, ImageFormat::Jpeg, 80, None, None).unwrap();
         assert!(is_jpeg(&output), "invalid jpeg from {name}");
     }
 }
@@ -83,7 +83,7 @@ fn alpha_png_encodes_to_all_formats() {
         (ImageFormat::WebP, is_webp),
         (ImageFormat::Avif, is_avif),
     ] {
-        let output = compress(&input, format, 80, None, None).unwrap();
+        let output = convert(&input, format, 80, None, None).unwrap();
         assert!(check(&output), "invalid output for {format:?}");
     }
 }
@@ -92,63 +92,63 @@ fn alpha_png_encodes_to_all_formats() {
 fn resize_preserves_dimensions_and_aspect() {
     let input = fixture("input.png");
 
-    let output = compress(&input, ImageFormat::Png, 80, Some(64), None).unwrap();
+    let output = convert(&input, ImageFormat::Png, 80, Some(64), None).unwrap();
     assert_eq!(png_dimensions(&output), (64, 48));
 
-    let output = compress(&input, ImageFormat::Png, 80, None, Some(60)).unwrap();
+    let output = convert(&input, ImageFormat::Png, 80, None, Some(60)).unwrap();
     assert_eq!(png_dimensions(&output), (80, 60));
 
-    let output = compress(&input, ImageFormat::Png, 80, Some(100), Some(50)).unwrap();
+    let output = convert(&input, ImageFormat::Png, 80, Some(100), Some(50)).unwrap();
     assert_eq!(png_dimensions(&output), (100, 50));
 
-    let output = compress(&input, ImageFormat::Png, 80, None, None).unwrap();
+    let output = convert(&input, ImageFormat::Png, 80, None, None).unwrap();
     assert_eq!(png_dimensions(&output), (160, 120));
 }
 
 #[test]
 fn jpeg_quality_controls_output_size() {
     let input = fixture("input.png");
-    let low = compress(&input, ImageFormat::Jpeg, 10, None, None).unwrap();
-    let high = compress(&input, ImageFormat::Jpeg, 95, None, None).unwrap();
+    let low = convert(&input, ImageFormat::Jpeg, 10, None, None).unwrap();
+    let high = convert(&input, ImageFormat::Jpeg, 95, None, None).unwrap();
     assert!(low.len() < high.len());
 }
 
 #[test]
 fn avif_input_is_unsupported() {
     let input = fixture("input.avif");
-    let err = compress(&input, ImageFormat::Png, 80, None, None).unwrap_err();
-    assert_eq!(err, image_compression::Error::UnsupportedFormat);
+    let err = convert(&input, ImageFormat::Png, 80, None, None).unwrap_err();
+    assert_eq!(err, image_conversion::Error::UnsupportedFormat);
 }
 
 #[test]
 fn garbage_input_is_invalid() {
-    let err = compress(b"not an image", ImageFormat::Jpeg, 80, None, None).unwrap_err();
-    assert_eq!(err, image_compression::Error::InvalidInput);
+    let err = convert(b"not an image", ImageFormat::Jpeg, 80, None, None).unwrap_err();
+    assert_eq!(err, image_conversion::Error::InvalidInput);
 }
 
 #[test]
 fn empty_input_is_invalid() {
-    let err = compress(b"", ImageFormat::Jpeg, 80, None, None).unwrap_err();
-    assert_eq!(err, image_compression::Error::InvalidInput);
+    let err = convert(b"", ImageFormat::Jpeg, 80, None, None).unwrap_err();
+    assert_eq!(err, image_conversion::Error::InvalidInput);
 }
 
 #[test]
 fn zero_dimensions_are_invalid() {
     let input = fixture("input.png");
-    let err = compress(&input, ImageFormat::Jpeg, 80, Some(0), None).unwrap_err();
-    assert_eq!(err, image_compression::Error::InvalidInput);
+    let err = convert(&input, ImageFormat::Jpeg, 80, Some(0), None).unwrap_err();
+    assert_eq!(err, image_conversion::Error::InvalidInput);
 }
 
 #[test]
 fn out_of_range_quality_is_clamped() {
     let input = fixture("input.png");
-    let output = compress(&input, ImageFormat::WebP, 255, None, None).unwrap();
+    let output = convert(&input, ImageFormat::WebP, 255, None, None).unwrap();
     assert!(is_webp(&output));
 }
 
 #[test]
 fn jpeg_output_for_odd_dimensions() {
     let input = fixture("input.png");
-    let output = compress(&input, ImageFormat::Jpeg, 80, Some(63), Some(47)).unwrap();
+    let output = convert(&input, ImageFormat::Jpeg, 80, Some(63), Some(47)).unwrap();
     assert!(is_jpeg(&output));
 }

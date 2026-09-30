@@ -4,7 +4,7 @@ Rust image transformation library that uses **FFmpeg's libavfilter as
 the native execution engine**. Rust validates and orchestrates; FFmpeg
 performs all pixel work in a single `buffer → filter chain → buffersink`
 graph pass. Decoding and encoding are reused from the
-`ppdrive-image-compression` crate via its public `Frame` bridge — no
+`ppdrive-image-conversion` crate via its public `Frame` bridge — no
 codec/AVIO code is duplicated here.
 
 - **Operations:** crop, rotate (90/180/270), flip, pad, grayscale,
@@ -29,14 +29,14 @@ src/
 
 `build.rs` discovers libavfilter/libavutil via `pkg-config` (honours
 `PKG_CONFIG_PATH`) with the same proven bindgen settings as
-`ppdrive-image-compression`.
+`ppdrive-image-conversion`.
 
 ### Pipeline
 
 ```
-input bytes → image_compression::Frame::decode
+input bytes → image_conversion::Frame::decode
            → buffer src → <filter chain> → buffersink   (libavfilter)
-           → image_compression::Frame::encode            (even-dim fix inside)
+           → image_conversion::Frame::encode            (even-dim fix inside)
            → output bytes
 ```
 
@@ -83,7 +83,7 @@ cargo test
 
 ```rust
 use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};
-use image_compression::ImageFormat;
+use image_conversion::ImageFormat;
 
 let transformer = ImageTransformer::new()?;
 let output = transformer.transform(
@@ -108,7 +108,7 @@ let output = transformer.transform(
 | `operations` | `Vec<TransformOperation>` | `[]` | Typed ops, applied **in order** |
 | `custom_filters` | `Option<String>` | `None` | Raw FFmpeg filter chain, appended last |
 | `format` | `Option<ImageFormat>` | `None` | `None` = keep input format (PNG fallback if unknown) |
-| `quality` | `Option<u8>` | `None` (= 80) | 0–100; clamped to 100, mapped per format (see compression docs) |
+| `quality` | `Option<u8>` | `None` (= 80) | 0–100; clamped to 100, mapped per format (see conversion docs) |
 
 ### Operations → filters
 
@@ -181,7 +181,7 @@ cargo run --example transform -- photo.png thumb.jpg \
 ## ppdrive plugin
 
 `plugin_dispatch` is exported with the same contract as
-`ppdrive-image-compression`: the loader passes a boxed
+`ppdrive-image-conversion`: the loader passes a boxed
 `(&[u8], &serde_json::Value)`; the JSON deserializes into
 `TransformOptions` (snake_case op tags, e.g.
 `{"operations":[{"crop":{"x":0,"y":0,"width":800,"height":600}},"grayscale"]}`).

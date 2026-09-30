@@ -8,7 +8,7 @@ license = "MIT OR Apache-2.0"
 readme = "README.MD"
 
 [dependencies]
-image-compression.workspace = true
+image-conversion.workspace = true
 ppdrive.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true

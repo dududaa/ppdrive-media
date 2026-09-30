@@ -15,7 +15,7 @@ mod bindings {
 }
 pub use bindings::*;
 
-use image_compression::Error;
+use image_conversion::Error;
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
 

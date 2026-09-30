@@ -1,4 +1,4 @@
-use image_compression::{Frame, ImageFormat};
+use image_conversion::{Frame, ImageFormat};
 use image_transformation::{Error, ImageTransformer, TransformOperation, TransformOptions};
 
 fn fixture(name: &str) -> Vec<u8> {

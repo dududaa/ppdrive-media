@@ -1,4 +1,4 @@
-use image_compression::ImageFormat;
+use image_conversion::ImageFormat;
 use serde::Deserialize;
 
 /// A single typed transformation applied inside the filter graph.
@@ -8,7 +8,7 @@ use serde::Deserialize;
 /// snake_case tags, e.g. `{"crop": {"x": 0, "y": 0, "width": 800,
 /// "height": 600}}`.
 ///
-/// Invalid arguments are rejected with [`image_compression::Error::InvalidInput`]
+/// Invalid arguments are rejected with [`image_conversion::Error::InvalidInput`]
 /// before any FFmpeg call: crop rectangles must lie inside the source
 /// image, rotate only accepts 90/180/270, scale dimensions must be
 /// non-zero and all floating-point parameters must be finite.
@@ -82,7 +82,7 @@ pub enum TransformOperation {
 ///
 /// - **`quality`** — encoder quality `0..=100` (clamped to 100
 ///   internally). Default `None` = `80`. Semantics per format are
-///   documented on [`image_compression::CompressionOptions`].
+///   documented on [`image_conversion::ConversionOptions`].
 #[derive(Debug, Clone, PartialEq, Deserialize, Default)]
 pub struct TransformOptions {
     /// Typed operations, applied in order. `#[serde(default)]`.

@@ -1,12 +1,12 @@
-use image_compression::{CompressionOptions, ImageCompressor, ImageFormat};
+use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 use std::process::ExitCode;
 
 const USAGE: &str = "\
-Usage: compress <input> <output> [options]
+Usage: convert <input> <output> [options]
 
 Options:
   --format <jpeg|png|webp|avif>  Output format (default: from output extension)
-  --quality <0-100>              Compression quality (default: 80)
+  --quality <0-100>              Quality (default: 80)
   --width <pixels>               Target width
   --height <pixels>              Target height
   -h, --help                     Show this help
@@ -15,14 +15,14 @@ Options:
 struct Args {
     input: String,
     output: String,
-    options: CompressionOptions,
+    options: ConversionOptions,
 }
 
 fn parse_args() -> Result<Args, String> {
     let mut input: Option<String> = None;
     let mut output: Option<String> = None;
     let mut format: Option<ImageFormat> = None;
-    let mut options = CompressionOptions::default();
+    let mut options = ConversionOptions::default();
 
     let mut argv = std::env::args().skip(1);
     while let Some(arg) = argv.next() {
@@ -95,10 +95,10 @@ fn run(args: Args) -> Result<(), String> {
     let input_bytes = std::fs::read(&args.input).map_err(|e| format!("{}: {e}", args.input))?;
     let input_len = input_bytes.len();
 
-    let compressor = ImageCompressor::new().map_err(|e| format!("init failed: {e}"))?;
-    let output_bytes = compressor
-        .compress(&input_bytes, args.options)
-        .map_err(|e| format!("compression failed: {e}"))?;
+    let converter = ImageConverter::new().map_err(|e| format!("init failed: {e}"))?;
+    let output_bytes = converter
+        .convert(&input_bytes, args.options)
+        .map_err(|e| format!("conversion failed: {e}"))?;
 
     std::fs::write(&args.output, &output_bytes).map_err(|e| format!("{}: {e}", args.output))?;
 

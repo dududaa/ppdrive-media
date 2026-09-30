@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use image_compression::{CompressionOptions, ImageCompressor, ImageFormat};
+use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 
 fuzz_target!(|data: &[u8]| {
     let Some((&selector, payload)) = data.split_first() else {
@@ -18,14 +18,14 @@ fuzz_target!(|data: &[u8]| {
     let width = (selector & 0x80 != 0).then(|| u32::from(selector % 64) + 1);
     let height = (selector & 0x40 != 0).then(|| u32::from(selector % 64) + 1);
 
-    let options = CompressionOptions {
+    let options = ConversionOptions {
         format,
         quality,
         width,
         height,
     };
 
-    if let Ok(compressor) = ImageCompressor::new() {
-        let _ = compressor.compress(payload, options);
+    if let Ok(converter) = ImageConverter::new() {
+        let _ = converter.convert(payload, options);
     }
 });

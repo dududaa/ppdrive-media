@@ -100,8 +100,8 @@ jobs:
             prefix="lib"
           fi
 
-          mv "target/release/${prefix}image_compression_plugin.${lib_ext}" \
-            "ppdrive-image-compression-${os}-${arch}.${lib_ext}"
+          mv "target/release/${prefix}image_conversion_plugin.${lib_ext}" \
+            "ppdrive-image-conversion-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}image_transformation.${lib_ext}" \
             "ppdrive-image-transformation-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}audio_conversion_plugin.${lib_ext}" \
@@ -116,8 +116,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppdrive-image-compression-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppdrive-image-compression-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-image-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-image-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4

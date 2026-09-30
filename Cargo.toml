@@ -4,8 +4,8 @@ members = [
     "audio-conversion",
     "audio-conversion/plugin",
     "audio-effects",
-    "image-compression",
-    "image-compression/plugin",
+    "image-conversion",
+    "image-conversion/plugin",
     "image-transformation",
     "video-compression",
     "video-compression/plugin",
@@ -14,7 +14,7 @@ members = [
 
 [workspace.dependencies]
 audio-conversion = { path = "audio-conversion", version = "0.1.0", package = "ppdrive-audio-conversion" }
-image-compression = { path = "image-compression", package = "ppdrive-image-compression" }
+image-conversion = { path = "image-conversion", package = "ppdrive-image-conversion" }
 ppdrive = "0.2.0"
 serde = "1.0.229"
 serde_json = "1.0.151"

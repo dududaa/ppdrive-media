@@ -1,11 +1,11 @@
 use crate::error::Error;
 use crate::ffi::wrappers::{Frame, scale_frame};
-use crate::image::options::CompressionOptions;
+use crate::image::options::ConversionOptions;
 
 pub(crate) fn target_dimensions(
     src_width: u32,
     src_height: u32,
-    options: &CompressionOptions,
+    options: &ConversionOptions,
 ) -> Result<(u32, u32), Error> {
     if src_width == 0 || src_height == 0 {
         return Err(Error::InvalidInput);
@@ -55,8 +55,8 @@ pub(crate) fn convert(
 mod tests {
     use super::*;
 
-    fn opts(width: Option<u32>, height: Option<u32>) -> CompressionOptions {
-        CompressionOptions {
+    fn opts(width: Option<u32>, height: Option<u32>) -> ConversionOptions {
+        ConversionOptions {
             width,
             height,
             ..Default::default()

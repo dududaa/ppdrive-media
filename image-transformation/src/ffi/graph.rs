@@ -1,5 +1,5 @@
 use super::*;
-use image_compression::Error;
+use image_conversion::Error;
 use std::ffi::CString;
 use std::ptr;
 

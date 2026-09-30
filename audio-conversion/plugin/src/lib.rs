@@ -2,7 +2,7 @@
 //!
 //! `plugin_dispatch` lives in this cdylib-only crate instead of in the
 //! `audio-conversion` library itself, following the same structural
-//! rule as `image-compression`: an rlib whose code is linked into
+//! rule as `image-conversion`: an rlib whose code is linked into
 //! another plugin cdylib must not define `plugin_dispatch`, or the
 //! symbol collides at link time with the other crate's own entry point.
 

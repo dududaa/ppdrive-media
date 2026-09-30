@@ -1,6 +1,6 @@
 use std::fmt;
 
-/// Errors produced by the compression pipeline.
+/// Errors produced by the conversion pipeline.
 ///
 /// Implements [`std::fmt::Display`] (human-readable message) and
 /// [`std::error::Error`], so it works with `?` into any error sink.

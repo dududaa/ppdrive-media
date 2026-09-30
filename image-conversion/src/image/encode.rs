@@ -2,7 +2,7 @@ use crate::error::Error;
 use crate::ffi;
 use crate::ffi::encode::{EncodeConfig, Encoder};
 use crate::ffi::wrappers::{Frame, find_encoder_by_id, find_encoder_by_name};
-use crate::image::options::{CompressionOptions, ImageFormat};
+use crate::image::options::{ConversionOptions, ImageFormat};
 use crate::image::resize;
 
 pub(crate) struct EncodeSpec {
@@ -101,7 +101,7 @@ fn quality_settings(format: ImageFormat, quality: u8) -> (Option<i32>, Vec<(Stri
 
 pub(crate) fn encode(
     frame: &Frame,
-    options: &CompressionOptions,
+    options: &ConversionOptions,
     spec: &EncodeSpec,
 ) -> Result<Vec<u8>, Error> {
     let codec = match spec.codec_name {
@@ -139,7 +139,7 @@ pub(crate) fn encode_prepared(
     let spec = spec_for(format);
     let (width, height) = resize::round_to_even(width, height, spec.force_even);
     let dst_fmt = spec.pix_fmt(frame.has_alpha());
-    let options = CompressionOptions {
+    let options = ConversionOptions {
         format,
         quality,
         width: None,

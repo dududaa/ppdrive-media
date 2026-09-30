@@ -1,4 +1,4 @@
-//! High-performance image compression library with FFmpeg as the native
+//! High-performance image conversion library with FFmpeg as the native
 //! execution engine.
 //!
 //! Rust orchestrates; FFmpeg does all decoding, resizing, pixel conversion
@@ -6,20 +6,20 @@
 //! `libavutil` and `libswscale`.
 //!
 //! ```no_run
-//! use image_compression::{CompressionOptions, ImageCompressor, ImageFormat};
+//! use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 //!
 //! # let input_bytes: Vec<u8> = Vec::new();
-//! let compressor = ImageCompressor::new()?;
-//! let output = compressor.compress(
+//! let converter = ImageConverter::new()?;
+//! let output = converter.convert(
 //!     &input_bytes,
-//!     CompressionOptions {
+//!     ConversionOptions {
 //!         format: ImageFormat::WebP,
 //!         quality: 80,
 //!         width: Some(800),
 //!         height: Some(600),
 //!     },
 //! )?;
-//! # Ok::<(), image_compression::Error>(())
+//! # Ok::<(), image_conversion::Error>(())
 //! ```
 
 mod error;
@@ -27,4 +27,4 @@ mod ffi;
 mod image;
 
 pub use error::Error;
-pub use image::{CompressionOptions, Frame, ImageCompressor, ImageFormat};
+pub use image::{ConversionOptions, Frame, ImageConverter, ImageFormat};

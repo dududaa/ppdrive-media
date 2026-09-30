@@ -132,7 +132,7 @@ jobs:
             ~/.cargo/git
             audio-conversion/fuzz/target
             audio-effects/fuzz/target
-            image-compression/fuzz/target
+            image-conversion/fuzz/target
             image-transformation/fuzz/target
             video-compression/fuzz/target
             video-transformation/fuzz/target
@@ -145,8 +145,8 @@ jobs:
         working-directory: audio-effects
         continue-on-error: true
         run: cargo fuzz run fuzz_apply -- -max_total_time=60
-      - name: Fuzz image-compression
-        working-directory: image-compression
+      - name: Fuzz image-conversion
+        working-directory: image-conversion
         continue-on-error: true
         run: cargo fuzz run fuzz_decode -- -max_total_time=60
       - name: Fuzz image-transformation

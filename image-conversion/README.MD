@@ -1,6 +1,6 @@
-# ppdrive-image-compression
+# ppdrive-image-conversion
 
-Rust image compression library that uses **FFmpeg as the native execution
+Rust image conversion library that uses **FFmpeg as the native execution
 engine**. Rust orchestrates; FFmpeg does all decoding, resizing, pixel
 conversion and encoding through dynamically linked `libavcodec`,
 `libavformat`, `libavutil` and `libswscale`.
@@ -17,7 +17,7 @@ conversion and encoding through dynamically linked `libavcodec`,
 src/
 ├── ffi/      unsafe: bindings (build.rs + bindgen), AVIO/AVFrame/AVCodec
 │             RAII wrappers, demux/encode loops
-└── image/    safe public API: ImageCompressor, CompressionOptions,
+└── image/    safe public API: ImageConverter, ConversionOptions,
               decode → resize → encode pipeline
 ```
 
@@ -43,7 +43,7 @@ and emits version cfgs so one crate builds across FFmpeg 6.x → 9.x.
 cargo build
 cargo test          # 28 tests
 cargo clippy --all-targets
-cargo run --example compress -- input.png output.webp --quality 85
+cargo run --example convert -- input.png output.webp --quality 85
 ```
 
 ### Switching FFmpeg versions
@@ -64,12 +64,12 @@ cargo test
 ## Library usage
 
 ```rust
-use image_compression::{CompressionOptions, ImageCompressor, ImageFormat};
+use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 
-let compressor = ImageCompressor::new()?;
-let output = compressor.compress(
+let converter = ImageConverter::new()?;
+let output = converter.convert(
     &input_bytes,
-    CompressionOptions {
+    ConversionOptions {
         format: ImageFormat::WebP,
         quality: 80,
         width: Some(800),
@@ -123,18 +123,18 @@ channel; JPEG and AVIF outputs are opaque.
 ## Example CLI
 
 ```
-Usage: compress <input> <output> [options]
+Usage: convert <input> <output> [options]
 
 Options:
   --format <jpeg|png|webp|avif>  Output format (default: from output extension)
-  --quality <0-100>              Compression quality (default: 80)
+  --quality <0-100>              Quality (default: 80)
   --width <pixels>               Target width
   --height <pixels>              Target height
   -h, --help                     Show this help
 ```
 
 ```bash
-cargo run --example compress -- photo.jpg thumb.avif --quality 60 --width 800
+cargo run --example convert -- photo.jpg thumb.avif --quality 60 --width 800
 # photo.jpg: 245760 bytes -> thumb.avif: 18432 bytes (7.5%)
 ```
 
@@ -146,8 +146,8 @@ cargo run --example compress -- photo.jpg thumb.avif --quality 60 --width 800
   irrelevant. Output format comes from `options.format` (or the file
   extension in the CLI).
 - Single images only — no animated GIF/WebP outputs.
-- The `ffi` module is internal; only `ImageCompressor`,
-  `CompressionOptions`, `ImageFormat` and `Error` are public.
+- The `ffi` module is internal; only `ImageConverter`,
+  `ConversionOptions`, `ImageFormat` and `Error` are public.
 
 ## Continuous integration
 
@@ -168,7 +168,7 @@ request:
 ```bash
 rustup toolchain install nightly
 cargo install cargo-fuzz
-cd image-compression
+cd image-conversion
 cargo fuzz run fuzz_decode            # smoke run: -- -max_total_time=60
 ```
 
@@ -184,9 +184,9 @@ cargo fuzz run fuzz_decode            # smoke run: -- -max_total_time=60
 | `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
 
 Each release asset is the plugin cdylib itself (no archive), renamed to
-`ppdrive-image-compression-<os>-<arch>.<ext>` (ppdrive's plugin library
+`ppdrive-image-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
 naming), for example
-`ppdrive-image-compression-linux-x86_64.so`. FFmpeg shared libraries are
+`ppdrive-image-conversion-linux-x86_64.so`. FFmpeg shared libraries are
 **not** bundled (licensing) — the target machine needs its own FFmpeg
 installation at runtime.
 

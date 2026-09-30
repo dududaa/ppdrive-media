@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-/// Output format to encode the compressed image into.
+/// Output format to encode the converted image into.
 ///
 /// Selecting a variant also selects the underlying FFmpeg encoder:
 /// MJPEG for [`ImageFormat::Jpeg`], the native PNG encoder for
@@ -38,7 +38,7 @@ impl ImageFormat {
     }
 }
 
-/// Parameters controlling a single [`crate::ImageCompressor::compress`] call.
+/// Parameters controlling a single [`crate::ImageConverter::convert`] call.
 ///
 /// # Fields
 ///
@@ -69,7 +69,7 @@ impl ImageFormat {
 /// # Example
 ///
 /// ```text
-/// CompressionOptions {
+/// ConversionOptions {
 ///     format: ImageFormat::WebP,
 ///     quality: 80,
 ///     width: Some(800),
@@ -77,7 +77,7 @@ impl ImageFormat {
 /// }
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
-pub struct CompressionOptions {
+pub struct ConversionOptions {
     /// Output format. Default: [`ImageFormat::Jpeg`].
     pub format: ImageFormat,
     /// Quality on a 0–100 scale (values above 100 are clamped).
@@ -91,10 +91,10 @@ pub struct CompressionOptions {
     pub height: Option<u32>,
 }
 
-impl Default for CompressionOptions {
+impl Default for ConversionOptions {
     /// JPEG at quality 80, original dimensions.
     fn default() -> Self {
-        CompressionOptions {
+        ConversionOptions {
             format: ImageFormat::Jpeg,
             quality: 80,
             width: None,

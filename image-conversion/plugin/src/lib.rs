@@ -1,18 +1,18 @@
-//! ppdrive plugin cdylib for [`image-compression`].
+//! ppdrive plugin cdylib for [`image-conversion`].
 //!
 //! `plugin_dispatch` lives in this cdylib-only crate instead of in the
-//! `image-compression` library itself. The library rlib is also linked
+//! `image-conversion` library itself. The library rlib is also linked
 //! into the `image-transformation` plugin cdylib, and a `#[no_mangle]`
 //! symbol defined there would collide with that crate's own
 //! `plugin_dispatch` at link time (a hard error with `rust-lld`).
 
-use image_compression::{CompressionOptions, ImageCompressor};
+use image_conversion::{ConversionOptions, ImageConverter};
 use ppdrive::plugin::loader::DispatchResponse;
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;
 
-/// ppdrive plugin entry point: decodes and compresses an image.
+/// ppdrive plugin entry point: decodes and converts an image.
 ///
 /// `args` must be a pointer to a `Box` of `(&[u8], &serde_json::Value)`
 /// (input bytes + options JSON), as produced by the ppdrive plugin
@@ -30,14 +30,14 @@ use std::fmt::Display;
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn plugin_dispatch(args: *mut c_void) -> *mut DispatchResponse {
     let args = unsafe { Box::from_raw(args as *mut (&[u8], &Value)) };
-    let options = serde_json::from_value::<CompressionOptions>(args.1.clone());
+    let options = serde_json::from_value::<ConversionOptions>(args.1.clone());
 
     if let Err(err) = &options {
         return unsafe_err(err);
     }
 
-    let resp = match ImageCompressor::new() {
-        Ok(compressor) => match compressor.compress(args.0, options.unwrap_or_default()) {
+    let resp = match ImageConverter::new() {
+        Ok(converter) => match converter.convert(args.0, options.unwrap_or_default()) {
             Ok(data) => {
                 let data = Box::into_raw(Box::new(data)) as *mut c_void;
                 DispatchResponse::Ok(data)

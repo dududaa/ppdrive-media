@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::ffi;
-use crate::image::options::CompressionOptions;
+use crate::image::options::ConversionOptions;
 use crate::image::{decode, encode, resize};
 
 /// Entry point for decoding, resizing and encoding images through FFmpeg.
@@ -10,11 +10,11 @@ use crate::image::{decode, encode, resize};
 /// FFmpeg libraries and lowers FFmpeg's log verbosity to errors only.
 ///
 /// Instances are `Send + Sync` in spirit (no shared state) and may be
-/// reused for any number of [`compress`](ImageCompressor::compress) calls.
-pub struct ImageCompressor;
+/// reused for any number of [`convert`](ImageConverter::convert) calls.
+pub struct ImageConverter;
 
-impl ImageCompressor {
-    /// Creates a compressor after checking that JPEG, PNG, WebP and AVIF
+impl ImageConverter {
+    /// Creates a converter after checking that JPEG, PNG, WebP and AVIF
     /// encoders are present in the linked FFmpeg build.
     ///
     /// Returns [`crate::Error::EncoderNotFound`] if any of them is missing,
@@ -37,10 +37,10 @@ impl ImageCompressor {
         ] {
             ffi::wrappers::find_encoder_by_id(id)?;
         }
-        Ok(ImageCompressor)
+        Ok(ImageConverter)
     }
 
-    /// Compresses an encoded image into the requested format.
+    /// Converts an encoded image into the requested format.
     ///
     /// `input` may be any still image format FFmpeg can decode
     /// (JPEG, PNG, WebP, GIF, BMP, TIFF, …), probed from content — file
@@ -54,7 +54,7 @@ impl ImageCompressor {
     /// Returns [`Error::InvalidInput`] if `options.width` or
     /// `options.height` is `Some(0)`, or if the input is empty or
     /// undecodable.
-    pub fn compress(&self, input: &[u8], options: CompressionOptions) -> Result<Vec<u8>, Error> {
+    pub fn convert(&self, input: &[u8], options: ConversionOptions) -> Result<Vec<u8>, Error> {
         if options.width == Some(0) || options.height == Some(0) {
             return Err(Error::InvalidInput);
         }
@@ -89,11 +89,11 @@ mod tests {
     #[test]
     fn webp_roundtrip_preserves_alpha() {
         let input = fixture("input_alpha.png");
-        let compressor = ImageCompressor::new().unwrap();
-        let output = compressor
-            .compress(
+        let converter = ImageConverter::new().unwrap();
+        let output = converter
+            .convert(
                 &input,
-                CompressionOptions {
+                ConversionOptions {
                     format: ImageFormat::WebP,
                     quality: 80,
                     width: None,
@@ -110,11 +110,11 @@ mod tests {
     #[test]
     fn png_roundtrip_preserves_alpha() {
         let input = fixture("input_alpha.png");
-        let compressor = ImageCompressor::new().unwrap();
-        let output = compressor
-            .compress(
+        let converter = ImageConverter::new().unwrap();
+        let output = converter
+            .convert(
                 &input,
-                CompressionOptions {
+                ConversionOptions {
                     format: ImageFormat::Png,
                     quality: 80,
                     width: None,
