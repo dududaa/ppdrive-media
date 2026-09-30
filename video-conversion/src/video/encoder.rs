@@ -92,12 +92,19 @@ fn spec_for(format: VideoFormat) -> EncodeSpec {
     }
 }
 
-/// Maps `quality` plus the optional `effort` knob to encoder options.
-/// `effort` is clamped to 100; `None` keeps the per-family defaults
-/// (`preset=veryfast`, `cpu-used=4`).
-fn encoder_options(format: VideoFormat, quality: u8, effort: Option<u8>) -> Vec<(String, String)> {
+/// Maps `quality` plus the optional `effort` and `keyframe_interval`
+/// knobs to encoder options. `effort` is clamped to 100; `None` keeps
+/// the per-family defaults (`preset=veryfast`, `cpu-used=4`).
+/// `keyframe_interval` maps to FFmpeg's generic `g` (GOP size)
+/// option when set — every wrapper in use honours it.
+fn encoder_options(
+    format: VideoFormat,
+    quality: u8,
+    effort: Option<u8>,
+    keyframe_interval: Option<u32>,
+) -> Vec<(String, String)> {
     let crf = crf_for_quality(format, quality).to_string();
-    match format {
+    let mut options = match format {
         VideoFormat::Mp4
         | VideoFormat::Mov
         | VideoFormat::Mkv
@@ -143,7 +150,11 @@ fn encoder_options(format: VideoFormat, quality: u8, effort: Option<u8>) -> Vec<
                 ("cpu-used".to_string(), cpu_used),
             ]
         }
+    };
+    if let Some(interval) = keyframe_interval {
+        options.push(("g".to_string(), interval.to_string()));
     }
+    options
 }
 
 fn valid_time_base(num: i32, den: i32) -> ffi::AVRational {
@@ -178,6 +189,7 @@ impl VideoEncoder {
         quality: u8,
         effort: Option<u8>,
         fps: Option<u32>,
+        keyframe_interval: Option<u32>,
         width: u32,
         height: u32,
         info: &VideoStreamInfo,
@@ -220,7 +232,7 @@ impl VideoEncoder {
             pix_fmt: ffi::AV_PIX_FMT_YUV420P,
             time_base,
             frame_rate,
-            options: encoder_options(format, quality, effort),
+            options: encoder_options(format, quality, effort, keyframe_interval),
             output,
             audio,
         };
@@ -240,6 +252,7 @@ impl VideoEncoder {
         quality: u8,
         effort: Option<u8>,
         fps: Option<u32>,
+        keyframe_interval: Option<u32>,
         width: u32,
         height: u32,
         info: &VideoStreamInfo,
@@ -250,6 +263,7 @@ impl VideoEncoder {
             quality,
             effort,
             fps,
+            keyframe_interval,
             width,
             height,
             info,
@@ -268,6 +282,7 @@ impl VideoEncoder {
         quality: u8,
         effort: Option<u8>,
         fps: Option<u32>,
+        keyframe_interval: Option<u32>,
         width: u32,
         height: u32,
         info: &VideoStreamInfo,
@@ -278,6 +293,7 @@ impl VideoEncoder {
             quality,
             effort,
             fps,
+            keyframe_interval,
             width,
             height,
             info,
@@ -360,7 +376,7 @@ mod tests {
     #[test]
     fn encoder_options_carry_crf_and_codec_knobs() {
         for (format, encoder, _, _) in ALL {
-            let options = encoder_options(format, 80, None);
+            let options = encoder_options(format, 80, None, None);
             assert!(
                 options.iter().any(|(k, _)| k == "crf"),
                 "{format:?}: missing crf"
@@ -403,39 +419,57 @@ mod tests {
             VideoFormat::Mp4Hevc,
             VideoFormat::MovHevc,
         ] {
-            let options = encoder_options(format, 80, None);
+            let options = encoder_options(format, 80, None, None);
             assert_eq!(option(&options, "preset"), "veryfast", "{format:?}");
         }
         for format in [VideoFormat::WebM, VideoFormat::Mp4Av1, VideoFormat::MkvAv1] {
-            let options = encoder_options(format, 80, None);
+            let options = encoder_options(format, 80, None, None);
             assert_eq!(option(&options, "cpu-used"), "4", "{format:?}");
         }
     }
 
     #[test]
     fn effort_zero_is_fastest_and_hundred_is_slowest() {
-        let fast = encoder_options(VideoFormat::Mp4, 80, Some(0));
+        let fast = encoder_options(VideoFormat::Mp4, 80, Some(0), None);
         assert_eq!(option(&fast, "preset"), "ultrafast");
-        let slow = encoder_options(VideoFormat::Mp4, 80, Some(100));
+        let slow = encoder_options(VideoFormat::Mp4, 80, Some(100), None);
         assert_eq!(option(&slow, "preset"), "veryslow");
-        let clamped = encoder_options(VideoFormat::Mp4, 80, Some(255));
+        let clamped = encoder_options(VideoFormat::Mp4, 80, Some(255), None);
         assert_eq!(option(&clamped, "preset"), "veryslow");
 
-        let fast = encoder_options(VideoFormat::WebM, 80, Some(0));
+        let fast = encoder_options(VideoFormat::WebM, 80, Some(0), None);
         assert_eq!(option(&fast, "cpu-used"), "8");
-        let slow = encoder_options(VideoFormat::WebM, 80, Some(100));
+        let slow = encoder_options(VideoFormat::WebM, 80, Some(100), None);
         assert_eq!(option(&slow, "cpu-used"), "0");
 
-        let fast = encoder_options(VideoFormat::MkvAv1, 80, Some(0));
+        let fast = encoder_options(VideoFormat::MkvAv1, 80, Some(0), None);
         assert_eq!(option(&fast, "cpu-used"), "8");
-        let slow = encoder_options(VideoFormat::MkvAv1, 80, Some(100));
+        let slow = encoder_options(VideoFormat::MkvAv1, 80, Some(100), None);
         assert_eq!(option(&slow, "cpu-used"), "0");
     }
 
     #[test]
+    fn keyframe_interval_maps_to_codec_gop_knob() {
+        for format in [
+            VideoFormat::Mp4,
+            VideoFormat::WebM,
+            VideoFormat::Mp4Hevc,
+            VideoFormat::Mp4Av1,
+        ] {
+            let options = encoder_options(format, 80, None, Some(100));
+            assert_eq!(option(&options, "g"), "100", "{format:?}");
+        }
+        assert!(
+            encoder_options(VideoFormat::Mp4, 80, None, None)
+                .iter()
+                .all(|(k, _)| k != "g")
+        );
+    }
+
+    #[test]
     fn aom_crf_rejects_zero_quality_at_lossless() {
-        let low = encoder_options(VideoFormat::Mp4Av1, 0, None);
-        let high = encoder_options(VideoFormat::Mp4Av1, 100, None);
+        let low = encoder_options(VideoFormat::Mp4Av1, 0, None, None);
+        let high = encoder_options(VideoFormat::Mp4Av1, 100, None, None);
         assert!(low.iter().any(|(k, v)| k == "crf" && v == "63"));
         assert!(high.iter().any(|(k, v)| k == "crf" && v == "24"));
     }

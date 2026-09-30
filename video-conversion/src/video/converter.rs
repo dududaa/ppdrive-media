@@ -115,6 +115,7 @@ impl VideoConverter {
             options.quality,
             options.effort,
             options.fps,
+            options.keyframe_interval,
             width,
             height,
             &info,
@@ -165,6 +166,7 @@ fn convert_once(input: &[u8], options: &ConversionOptions, quality: u8) -> Resul
         quality,
         options.effort,
         options.fps,
+        options.keyframe_interval,
         width,
         height,
         &info,
@@ -550,6 +552,35 @@ mod tests {
             )
             .unwrap_err();
         assert_eq!(err, Error::TargetSizeUnreachable);
+    }
+
+    #[test]
+    fn keyframe_interval_caps_keyframe_gaps() {
+        let input = fixture("input.mp4");
+        let converter = VideoConverter::new().unwrap();
+        let mut positions = Vec::new();
+        converter
+            .convert_to(
+                &input,
+                ConversionOptions {
+                    keyframe_interval: Some(10),
+                    ..ConversionOptions::default()
+                },
+                false,
+                &mut |_params, packet| positions.push(packet.is_keyframe),
+            )
+            .unwrap();
+        assert!(positions.first().is_some_and(|k| *k), "first not keyframe");
+        let keyframes: Vec<usize> = positions
+            .iter()
+            .enumerate()
+            .filter(|(_, k)| **k)
+            .map(|(i, _)| i)
+            .collect();
+        assert!(keyframes.len() >= 4, "{} keyframes", keyframes.len());
+        for gap in keyframes.windows(2) {
+            assert!(gap[1] - gap[0] <= 10, "gap {}", gap[1] - gap[0]);
+        }
     }
 
     #[test]

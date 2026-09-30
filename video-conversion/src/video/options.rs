@@ -178,6 +178,13 @@ impl VideoFormat {
 ///   `false` (the default) keeps the automatic behaviour: copy when
 ///   compatible, drop otherwise. Audio is never transcoded.
 ///
+/// - **`keyframe_interval`** — maximum keyframe distance in frames.
+///   `None` keeps the encoder's default GOP; `Some(n)` caps it at `n`
+///   (x264/x265 `keyint`, libvpx/libaom `g`), which lets packaging
+///   pipelines cut HLS/DASH segments exactly on segment boundaries.
+///   `Some(0)` is rejected with [`crate::Error::InvalidInput`].
+///   Default: `None`.
+///
 /// # Example
 ///
 /// ```text
@@ -191,6 +198,7 @@ impl VideoFormat {
 ///     max_bytes: None,
 ///     fps: None,
 ///     drop_audio: false,
+///     keyframe_interval: None,
 /// }
 /// ```
 #[derive(Debug, Clone, PartialEq, Deserialize)]
@@ -221,6 +229,9 @@ pub struct ConversionOptions {
     /// the container accepts it. Default: `false`.
     #[serde(default)]
     pub drop_audio: bool,
+    /// Maximum keyframe distance in frames; `None` keeps the encoder
+    /// default GOP. Default: `None`.
+    pub keyframe_interval: Option<u32>,
 }
 
 impl Default for ConversionOptions {
@@ -237,6 +248,7 @@ impl Default for ConversionOptions {
             max_bytes: None,
             fps: None,
             drop_audio: false,
+            keyframe_interval: None,
         }
     }
 }
@@ -252,6 +264,9 @@ impl ConversionOptions {
         if let Some(fps) = self.fps
             && (fps == 0 || fps > 1000)
         {
+            return Err(Error::InvalidInput);
+        }
+        if self.keyframe_interval == Some(0) {
             return Err(Error::InvalidInput);
         }
         Ok(())
@@ -319,6 +334,7 @@ mod tests {
         assert_eq!(default.effort, None);
         assert_eq!(default.max_bytes, None);
         assert_eq!(default.fps, None);
+        assert_eq!(default.keyframe_interval, None);
         assert!(!default.drop_audio);
     }
 
@@ -359,6 +375,20 @@ mod tests {
         assert_eq!(opts.max_bytes, Some(65536));
         assert_eq!(opts.fps, Some(30));
         assert!(opts.drop_audio);
+    }
+
+    #[test]
+    fn validate_rejects_zero_keyframe_interval() {
+        let opts = ConversionOptions {
+            keyframe_interval: Some(0),
+            ..ConversionOptions::default()
+        };
+        assert_eq!(opts.validate(), Err(Error::InvalidInput));
+        let opts = ConversionOptions {
+            keyframe_interval: Some(10),
+            ..ConversionOptions::default()
+        };
+        assert!(opts.validate().is_ok());
     }
 
     #[test]

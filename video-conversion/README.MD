@@ -101,6 +101,7 @@ let output = converter.convert(
 | `max_bytes` | `Option<u64>` | `None` | Search quality (≤ 8 full re-encodes) for an output at most this many bytes |
 | `fps` | `Option<u32>` | `None` | Force a constant output frame rate (1–1000); frames are dropped/duplicated to fit |
 | `drop_audio` | `bool` | `false` | Drop the input's audio track instead of stream-copying it |
+| `keyframe_interval` | `Option<u32>` | `None` | Maximum keyframe distance in frames (`g` GOP knob); lets segmenters cut on boundaries |
 
 ### Quality mapping (per format)
 
@@ -162,7 +163,7 @@ never transcoded.
 | `FfmpegError(msg)` | FFmpeg call failed (`av_strerror` message) |
 | `DecoderNotFound` | no decoder for the input video in this FFmpeg |
 | `EncoderNotFound` | the requested format's encoder (libx264, libvpx-vp9, libaom-av1 or libx265) missing from FFmpeg |
-| `InvalidInput` | empty input, zero width/height, `max_bytes: Some(0)`, `fps` outside 1–1000, a bad `scale`, a size budget on `convert_to`, or a container that would encode no frames |
+| `InvalidInput` | empty input, zero width/height, `max_bytes: Some(0)`, `fps` outside 1–1000, `keyframe_interval: Some(0)`, a bad `scale`, a size budget on `convert_to`, or a container that would encode no frames |
 | `UnsupportedFormat` | input holds no video stream |
 | `TargetSizeUnreachable` | `max_bytes` cannot be met even at quality 0 |
 | `LimitExceeded(msg)` | a safety limit would be exceeded (used by transformation guards, e.g. `Reverse` frame buffering) |

@@ -105,6 +105,7 @@ impl VideoTransformer {
             quality,
             None,
             None,
+            None,
             sink_width + sink_width % 2,
             sink_height + sink_height % 2,
             &encoder_info,

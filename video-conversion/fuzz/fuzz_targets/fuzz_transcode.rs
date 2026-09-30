@@ -31,6 +31,7 @@ fuzz_target!(|data: &[u8]| {
         .then(|| payload.first().copied())
         .flatten()
         .map(|b| u64::from(b) * 1024);
+    let keyframe_interval = (selector & 0x01 != 0).then(|| u32::from(selector % 60) + 1);
 
     let options = ConversionOptions {
         format,
@@ -42,6 +43,7 @@ fuzz_target!(|data: &[u8]| {
         max_bytes,
         fps,
         drop_audio,
+        keyframe_interval,
     };
 
     if let Ok(converter) = VideoConverter::new() {
