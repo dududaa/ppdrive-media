@@ -1272,6 +1272,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "ppdrive-media-streaming-plugin"
+version = "0.1.0"
+dependencies = [
+ "ppdrive",
+ "ppdrive-media-streaming",
+ "serde_json",
+]
+
+[[package]]
 name = "ppdrive-video-conversion"
 version = "0.1.0"
 dependencies = [

@@ -182,6 +182,38 @@ request, covering this crate through the workspace:
   macOS (Homebrew FFmpeg)
 - **MSRV** — `cargo check` with Rust 1.94.0
 
+## Plugin
+
+`media-streaming/plugin` (`ppdrive-media-streaming-plugin`) is the
+ppdrive cdylib entry point. It mirrors the other plugins' C ABI —
+`plugin_dispatch(args: *mut c_void) -> *mut DispatchResponse` — but
+is **file-based** instead of byte-based, because one call produces
+many files:
+
+- **Args**: a boxed `(&Path, &Path, &serde_json::Value)` — input
+  file path, output directory path, options JSON (deserializes into
+  `StreamingOptions`).
+- **Response**: `Ok` payload is a boxed `Vec<u8>` of UTF-8 JSON —
+  `{"playlist": "...", "files": ["...", ...]}` — describing the
+  package written to the output directory; `Error` carries the
+  message string.
+
+## Releases
+
+`.github/workflows/release.yml` publishes artifacts on every `v*` tag:
+
+| Target | Runner | FFmpeg used |
+|--------|--------|-------------|
+| `x86_64-unknown-linux-gnu` | Ubuntu 24.04 | system FFmpeg 6.1 dev libs |
+| `aarch64-apple-darwin` | macOS arm64 | Homebrew FFmpeg |
+| `x86_64-apple-darwin` | macOS Intel (`macos-15-intel`) | Homebrew FFmpeg |
+| `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
+
+Each release asset is the plugin cdylib itself (no archive), renamed to
+`ppdrive-media-streaming-<os>-<arch>.<ext>` (ppdrive's plugin library
+naming). FFmpeg shared libraries are **not** bundled (licensing) —
+the target machine needs its own FFmpeg installation at runtime.
+
 ## License
 
 MIT OR Apache-2.0 (as declared in `Cargo.toml`).

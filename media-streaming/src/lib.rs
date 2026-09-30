@@ -16,7 +16,7 @@ use video_conversion::{StreamEvent, VideoEncoder, VideoFormat, VideoStream, Vide
 use crate::error::Error as StreamError;
 
 /// A finished HLS/DASH package on disk.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize)]
 pub struct StreamingOutput {
     /// The master playlist (`master.m3u8` for HLS, `manifest.mpd`
     /// for DASH) inside the output directory.
