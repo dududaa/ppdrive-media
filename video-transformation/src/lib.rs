@@ -4,7 +4,7 @@
 //! Rust orchestrates and validates; FFmpeg performs all pixel work in
 //! a `buffer → filter chain → buffersink` graph pass over the decoded
 //! frames. Demuxing, decoding, encoding and muxing are reused from the
-//! `video-compression` crate via its public stream/encoder bridge — no
+//! `video-conversion` crate via its public stream/encoder bridge — no
 //! codec/AVIO code is duplicated here.
 //!
 //! ```no_run
@@ -21,7 +21,7 @@
 //!         quality: Some(80),
 //!     },
 //! )?;
-//! # Ok::<(), video_compression::Error>(())
+//! # Ok::<(), video_conversion::Error>(())
 //! ```
 
 mod ffi;
@@ -32,7 +32,7 @@ use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;
 pub use video::{TransformOperation, TransformOptions, VideoTransformer};
-pub use video_compression::{Error, VideoFormat};
+pub use video_conversion::{Error, VideoFormat};
 
 /// ppdrive plugin entry point: transforms a video with libavfilter.
 ///

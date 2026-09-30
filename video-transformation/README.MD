@@ -4,7 +4,7 @@ Rust video transformation library that uses **FFmpeg's libavfilter as
 the native execution engine**. Rust validates and orchestrates; FFmpeg
 performs all pixel work in a single `buffer → filter chain → buffersink`
 graph pass over the decoded frames. Demuxing, decoding, encoding and
-muxing are reused from the `ppdrive-video-compression` crate via its
+muxing are reused from the `ppdrive-video-conversion` crate via its
 public `VideoStream`/`VideoEncoder` bridge — no codec/AVIO code is
 duplicated here.
 
@@ -38,10 +38,10 @@ src/
 ### Pipeline
 
 ```
-input bytes → video_compression::VideoStream (demux + decode + probe)
+input bytes → video_conversion::VideoStream (demux + decode + probe)
            → window filter (Trim, source timeline, video + audio)
            → buffer src → <filter chain> → buffersink   (libavfilter)
-           → video_compression::VideoEncoder::muxed      (even-dim fix inside)
+           → video_conversion::VideoEncoder::muxed      (even-dim fix inside)
            → output bytes
 ```
 
@@ -55,7 +55,7 @@ scale, rotate, pad) are muxed correctly.
 - Rust 1.94+ (edition 2024; the MSRV is driven by the `ppdrive`
   dependency tree, not by this crate itself)
 - FFmpeg **development** libraries: `libavfilter`, `libavutil` plus
-  everything the `ppdrive-video-compression` bridge needs
+  everything the `ppdrive-video-conversion` bridge needs
   (`libavformat`, `libavcodec`, `libswscale`, `libswresample`)
   - Debian/Ubuntu: `sudo apt install libavfilter-dev libavutil-dev
     libavformat-dev libavcodec-dev libswscale-dev libswresample-dev
@@ -93,7 +93,7 @@ cargo test
 
 ```rust
 use video_transformation::{TransformOperation, TransformOptions, VideoTransformer};
-use video_compression::VideoFormat;
+use video_conversion::VideoFormat;
 
 let transformer = VideoTransformer::new()?;
 let output = transformer.transform(
@@ -118,7 +118,7 @@ let output = transformer.transform(
 | `operations` | `Vec<TransformOperation>` | `[]` | Typed ops, applied **in order** |
 | `custom_filters` | `Option<String>` | `None` | Raw FFmpeg filter chain, appended last |
 | `format` | `Option<VideoFormat>` | `None` | `None` = keep source container (MP4/MOV → Mp4, WebM/Matroska → WebM, fallback Mp4) |
-| `quality` | `Option<u8>` | `None` (= 80) | 0–100; mapped to CRF per format (see `ppdrive-video-compression`) |
+| `quality` | `Option<u8>` | `None` (= 80) | 0–100; mapped to CRF per format (see `ppdrive-video-conversion`) |
 
 ### Operations → filters
 
@@ -212,7 +212,7 @@ ppdrive media plugins: the loader passes a boxed
 `TransformOptions` (snake_case op tags, e.g.
 `{"operations":[{"crop":{"x":0,"y":0,"width":640,"height":360}},"grayscale"]}`).
 The cdylib lives in `video-transformation` itself (`crate-type =
-["cdylib", "lib"]`), unlike `ppdrive-video-compression`, whose plugin
+["cdylib", "lib"]`), unlike `ppdrive-video-conversion`, whose plugin
 is the separate `plugin/` package.
 
 ## Notes & limitations
@@ -221,7 +221,7 @@ is the separate `plugin/` package.
   irrelevant. Output format comes from `options.format` (or the file
   extension in the CLI).
 - Only MP4 (H.264) and WebM (VP9) outputs; quality maps to CRF the
-  same way as `ppdrive-video-compression`.
+  same way as `ppdrive-video-conversion`.
 - `Speed`/`Reverse` drop the audio track; `Trim` keeps and trims it.
   Audio is never transcoded — kept tracks are stream-copied and
   dropped when the target container cannot carry their codec.

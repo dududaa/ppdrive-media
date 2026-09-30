@@ -134,7 +134,7 @@ jobs:
             audio-effects/fuzz/target
             image-conversion/fuzz/target
             image-transformation/fuzz/target
-            video-compression/fuzz/target
+            video-conversion/fuzz/target
             video-transformation/fuzz/target
           key: ${{ runner.os }}-${{ github.job }}-cargo-${{ hashFiles('**/Cargo.lock') }}
       - name: Fuzz audio-conversion
@@ -153,8 +153,8 @@ jobs:
         working-directory: image-transformation
         continue-on-error: true
         run: cargo fuzz run fuzz_transform -- -max_total_time=60
-      - name: Fuzz video-compression
-        working-directory: video-compression
+      - name: Fuzz video-conversion
+        working-directory: video-conversion
         continue-on-error: true
         run: cargo fuzz run fuzz_transcode -- -max_total_time=60
       - name: Fuzz video-transformation

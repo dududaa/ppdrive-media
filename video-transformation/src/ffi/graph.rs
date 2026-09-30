@@ -1,7 +1,7 @@
 use super::*;
 use std::ffi::CString;
 use std::ptr;
-use video_compression::Error;
+use video_conversion::Error;
 
 /// RAII wrapper for a filter-graph output frame (`av_buffersink_get_frame`).
 ///
