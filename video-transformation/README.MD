@@ -12,8 +12,10 @@ duplicated here.
   grayscale, brightness/contrast/saturation, blur, sharpen, trim,
   speed, reverse
 - **Escape hatch:** raw FFmpeg filter strings (`custom_filters`)
-- **Formats in/out:** anything FFmpeg demuxes in; output MP4 (H.264)
-  or WebM (VP9), defaulting to the source container
+- **Formats in/out:** anything FFmpeg demuxes in; output MP4, WebM,
+  MOV, MKV or AVI (H.264/VP9), plus AV1 (MP4/WebM/MKV) and H.265/HEVC
+  (MP4/MOV), defaulting to the source container (MP4/MOV → Mp4,
+  WebM/Matroska → WebM)
 - **Audio:** stream-copied when the target container accepts its
   codec; dropped for `Speed`/`Reverse` (no audio transcoding)
 - **No reimplementation:** no `ffmpeg-next`, no `dlopen`, no pixel
@@ -60,8 +62,9 @@ scale, rotate, pad) are muxed correctly.
   - Debian/Ubuntu: `sudo apt install libavfilter-dev libavutil-dev
     libavformat-dev libavcodec-dev libswscale-dev libswresample-dev
     pkg-config`
-  - MP4 output needs FFmpeg built with `libx264`, WebM output with
-    `libvpx-vp9` (both present in the standard builds)
+  - MP4/MOV/MKV/AVI output needs FFmpeg built with `libx264`, WebM
+    output with `libvpx-vp9`, AV1 output with `libaom-av1` and HEVC
+    output with `libx265` (all present in the standard builds)
 - Verified against FFmpeg **6.1.5** (system) and **9.0.2** (`/opt`);
   expected to work on 6.x–9.x
 
@@ -117,7 +120,7 @@ let output = transformer.transform(
 |-------|------|---------|---------|
 | `operations` | `Vec<TransformOperation>` | `[]` | Typed ops, applied **in order** |
 | `custom_filters` | `Option<String>` | `None` | Raw FFmpeg filter chain, appended last |
-| `format` | `Option<VideoFormat>` | `None` | `None` = keep source container (MP4/MOV → Mp4, WebM/Matroska → WebM, fallback Mp4) |
+| `format` | `Option<VideoFormat>` | `None` | `None` = keep source container (MP4/MOV → Mp4, WebM/Matroska → WebM, fallback Mp4); any `VideoFormat` variant can be set explicitly |
 | `quality` | `Option<u8>` | `None` (= 80) | 0–100; mapped to CRF per format (see `ppdrive-video-conversion`) |
 
 ### Operations → filters
@@ -193,7 +196,9 @@ Options (applied in the order given):
   --speed <factor>           Playback speed (audio is dropped)
   --reverse                  Reverse playback (audio is dropped)
   --filter <chain>           Raw libavfilter chain, applied last
-  --format <mp4|webm>        Output format (default: from output extension)
+  --format <fmt>            Output format: mp4, webm, mov, mkv, avi,
+                            mp4av1, webmav1, mkvav1, mp4hevc, movhevc
+                            (default: from output extension)
   --quality <0-100>          Output quality (default: 80)
   -h, --help                 Show this help
 ```

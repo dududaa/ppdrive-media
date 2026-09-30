@@ -1,0 +1,4 @@
+# Upstream x265 leaks a fixed 1168-byte block inside x265_encoder_close
+# (single allocation from libx265.so; not owned by this crate). All other
+# leaks — including anything from Rust or the rest of FFmpeg — still fail.
+leak:libx265

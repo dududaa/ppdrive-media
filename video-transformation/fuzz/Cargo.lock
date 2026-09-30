@@ -1226,7 +1226,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ppdrive-video-compression"
+name = "ppdrive-video-conversion"
 version = "0.1.0"
 dependencies = [
  "bindgen",
@@ -1241,7 +1241,7 @@ dependencies = [
  "bindgen",
  "pkg-config",
  "ppdrive",
- "ppdrive-video-compression",
+ "ppdrive-video-conversion",
  "serde",
  "serde_json",
 ]

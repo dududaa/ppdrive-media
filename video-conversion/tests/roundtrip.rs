@@ -32,17 +32,46 @@ fn is_mp4(data: &[u8]) -> bool {
     data.len() > 12 && &data[4..8] == b"ftyp"
 }
 
-fn is_webm(data: &[u8]) -> bool {
-    data.len() > 4 && data[..4] == [0x1A, 0x45, 0xDF, 0xA3]
+fn has_doctype(data: &[u8], doctype: &[u8]) -> bool {
+    data.len() > 4
+        && data[..4] == [0x1A, 0x45, 0xDF, 0xA3]
+        && data
+            .windows(doctype.len())
+            .take(64)
+            .any(|window| window == doctype)
 }
 
+fn is_webm(data: &[u8]) -> bool {
+    has_doctype(data, b"webm")
+}
+
+fn is_mkv(data: &[u8]) -> bool {
+    has_doctype(data, b"matroska")
+}
+
+fn is_avi(data: &[u8]) -> bool {
+    data.len() > 12 && &data[..4] == b"RIFF" && &data[8..12] == b"AVI "
+}
+
+type FormatCheck = (VideoFormat, fn(&[u8]) -> bool);
+
+const ALL_FORMATS: [FormatCheck; 10] = [
+    (VideoFormat::Mp4, is_mp4),
+    (VideoFormat::WebM, is_webm),
+    (VideoFormat::Mov, is_mp4),
+    (VideoFormat::Mkv, is_mkv),
+    (VideoFormat::Avi, is_avi),
+    (VideoFormat::Mp4Av1, is_mp4),
+    (VideoFormat::WebMAv1, is_webm),
+    (VideoFormat::MkvAv1, is_mkv),
+    (VideoFormat::Mp4Hevc, is_mp4),
+    (VideoFormat::MovHevc, is_mp4),
+];
+
 #[test]
-fn mp4_input_roundtrips_to_both_formats() {
+fn mp4_input_roundtrips_to_all_formats() {
     let input = fixture("input.mp4");
-    for (format, check) in [
-        (VideoFormat::Mp4, is_mp4 as fn(&[u8]) -> bool),
-        (VideoFormat::WebM, is_webm),
-    ] {
+    for (format, check) in ALL_FORMATS {
         let output = convert(&input, format, 80, None, None).unwrap();
         assert!(check(&output), "invalid output for {format:?}");
         let stream = VideoStream::open(&output).unwrap();
@@ -56,7 +85,7 @@ fn mp4_input_roundtrips_to_both_formats() {
 #[test]
 fn outputs_are_fully_decodable() {
     let input = fixture("input.mp4");
-    for format in [VideoFormat::Mp4, VideoFormat::WebM] {
+    for (format, _) in ALL_FORMATS {
         let output = convert(&input, format, 80, None, None).unwrap();
         let mut stream = VideoStream::open(&output).unwrap();
         let mut frames = 0usize;
@@ -102,10 +131,13 @@ fn out_of_range_quality_is_clamped() {
 }
 
 #[test]
-fn m4v_extension_maps_to_mp4() {
+fn extension_mapping_covers_plain_containers() {
     assert_eq!(VideoFormat::from_extension("m4v"), Some(VideoFormat::Mp4));
-    assert_eq!(VideoFormat::from_extension("MKV"), Some(VideoFormat::WebM));
-    assert_eq!(VideoFormat::from_extension("avi"), None);
+    assert_eq!(VideoFormat::from_extension("webm"), Some(VideoFormat::WebM));
+    assert_eq!(VideoFormat::from_extension("MKV"), Some(VideoFormat::Mkv));
+    assert_eq!(VideoFormat::from_extension("mov"), Some(VideoFormat::Mov));
+    assert_eq!(VideoFormat::from_extension("avi"), Some(VideoFormat::Avi));
+    assert_eq!(VideoFormat::from_extension("gif"), None);
 }
 
 #[test]

@@ -151,7 +151,8 @@ impl Encoder {
         codec_ctx.set_frame_rate(config.frame_rate.num, config.frame_rate.den);
 
         unsafe {
-            if !guard.0.is_null() && (*guard.0).flags & AVFMT_GLOBALHEADER as c_int != 0 {
+            if !guard.0.is_null() && (*(*guard.0).oformat).flags & AVFMT_GLOBALHEADER as c_int != 0
+            {
                 codec_ctx.set_global_header();
             }
         }

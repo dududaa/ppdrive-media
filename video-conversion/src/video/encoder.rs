@@ -8,15 +8,26 @@ use crate::ffi::encode::Encoder;
 pub use crate::ffi::encode::{VideoEncoderParams, VideoPacket};
 
 /// Maps the 0–100 quality slider to the target format's rate-control
-/// value (CRF): `51` at 0 → `18` at 100 for [`VideoFormat::Mp4`]
-/// (libx264 range 0–51), `63` at 0 → `24` at 100 for
-/// [`VideoFormat::WebM`] (libvpx-vp9 range 0–63). Values above 100 are
+/// value (CRF): `51` at 0 → `18` at 100 for the x264/x265 formats
+/// ([`VideoFormat::Mp4`], [`VideoFormat::Mov`], [`VideoFormat::Mkv`],
+/// [`VideoFormat::Avi`], [`VideoFormat::Mp4Hevc`],
+/// [`VideoFormat::MovHevc`]; codec range 0–51), `63` at 0 → `24` at
+/// 100 for VP9/AV1 formats ([`VideoFormat::WebM`],
+/// [`VideoFormat::Mp4Av1`], [`VideoFormat::WebMAv1`],
+/// [`VideoFormat::MkvAv1`]; codec range 0–63). Values above 100 are
 /// clamped to 100.
 pub fn crf_for_quality(format: VideoFormat, quality: u8) -> u8 {
     let q = u32::from(quality.min(100));
     match format {
-        VideoFormat::Mp4 => (51 - q * 33 / 100) as u8,
-        VideoFormat::WebM => (63 - q * 39 / 100) as u8,
+        VideoFormat::Mp4
+        | VideoFormat::Mov
+        | VideoFormat::Mkv
+        | VideoFormat::Avi
+        | VideoFormat::Mp4Hevc
+        | VideoFormat::MovHevc => (51 - q * 33 / 100) as u8,
+        VideoFormat::WebM | VideoFormat::Mp4Av1 | VideoFormat::WebMAv1 | VideoFormat::MkvAv1 => {
+            (63 - q * 39 / 100) as u8
+        }
     }
 }
 
@@ -38,19 +49,69 @@ fn spec_for(format: VideoFormat) -> EncodeSpec {
             muxer: "webm",
             filename: "out.webm",
         },
+        VideoFormat::Mov => EncodeSpec {
+            encoder_name: "libx264",
+            muxer: "mov",
+            filename: "out.mov",
+        },
+        VideoFormat::Mkv => EncodeSpec {
+            encoder_name: "libx264",
+            muxer: "matroska",
+            filename: "out.mkv",
+        },
+        VideoFormat::Avi => EncodeSpec {
+            encoder_name: "libx264",
+            muxer: "avi",
+            filename: "out.avi",
+        },
+        VideoFormat::Mp4Av1 => EncodeSpec {
+            encoder_name: "libaom-av1",
+            muxer: "mp4",
+            filename: "out.mp4",
+        },
+        VideoFormat::WebMAv1 => EncodeSpec {
+            encoder_name: "libaom-av1",
+            muxer: "webm",
+            filename: "out.webm",
+        },
+        VideoFormat::MkvAv1 => EncodeSpec {
+            encoder_name: "libaom-av1",
+            muxer: "matroska",
+            filename: "out.mkv",
+        },
+        VideoFormat::Mp4Hevc => EncodeSpec {
+            encoder_name: "libx265",
+            muxer: "mp4",
+            filename: "out.mp4",
+        },
+        VideoFormat::MovHevc => EncodeSpec {
+            encoder_name: "libx265",
+            muxer: "mov",
+            filename: "out.mov",
+        },
     }
 }
 
 fn encoder_options(format: VideoFormat, quality: u8) -> Vec<(String, String)> {
     let crf = crf_for_quality(format, quality).to_string();
     match format {
-        VideoFormat::Mp4 => vec![
+        VideoFormat::Mp4
+        | VideoFormat::Mov
+        | VideoFormat::Mkv
+        | VideoFormat::Avi
+        | VideoFormat::Mp4Hevc
+        | VideoFormat::MovHevc => vec![
             ("crf".to_string(), crf),
             ("preset".to_string(), "veryfast".to_string()),
         ],
         VideoFormat::WebM => vec![
             ("crf".to_string(), crf),
             ("deadline".to_string(), "good".to_string()),
+            ("cpu-used".to_string(), "4".to_string()),
+        ],
+        VideoFormat::Mp4Av1 | VideoFormat::WebMAv1 | VideoFormat::MkvAv1 => vec![
+            ("crf".to_string(), crf),
+            ("row-mt".to_string(), "1".to_string()),
             ("cpu-used".to_string(), "4".to_string()),
         ],
     }
@@ -203,5 +264,69 @@ impl VideoEncoder {
     /// encoded — such a container would be empty and unplayable.
     pub fn finish(self) -> Result<Vec<u8>, Error> {
         self.inner.finish()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const ALL: [(VideoFormat, &str, &str, &str); 10] = [
+        (VideoFormat::Mp4, "libx264", "mp4", "out.mp4"),
+        (VideoFormat::WebM, "libvpx-vp9", "webm", "out.webm"),
+        (VideoFormat::Mov, "libx264", "mov", "out.mov"),
+        (VideoFormat::Mkv, "libx264", "matroska", "out.mkv"),
+        (VideoFormat::Avi, "libx264", "avi", "out.avi"),
+        (VideoFormat::Mp4Av1, "libaom-av1", "mp4", "out.mp4"),
+        (VideoFormat::WebMAv1, "libaom-av1", "webm", "out.webm"),
+        (VideoFormat::MkvAv1, "libaom-av1", "matroska", "out.mkv"),
+        (VideoFormat::Mp4Hevc, "libx265", "mp4", "out.mp4"),
+        (VideoFormat::MovHevc, "libx265", "mov", "out.mov"),
+    ];
+
+    #[test]
+    fn spec_pairs_encoder_muxer_and_filename() {
+        for (format, encoder, muxer, filename) in ALL {
+            let spec = spec_for(format);
+            assert_eq!(spec.encoder_name, encoder, "{format:?}");
+            assert_eq!(spec.muxer, muxer, "{format:?}");
+            assert_eq!(spec.filename, filename, "{format:?}");
+        }
+    }
+
+    #[test]
+    fn encoder_options_carry_crf_and_codec_knobs() {
+        for (format, encoder, _, _) in ALL {
+            let options = encoder_options(format, 80);
+            assert!(
+                options.iter().any(|(k, _)| k == "crf"),
+                "{format:?}: missing crf"
+            );
+            let knobs: Vec<&str> = options.iter().map(|(k, _)| k.as_str()).collect();
+            match encoder {
+                "libx264" | "libx265" => assert!(knobs.contains(&"preset"), "{format:?}"),
+                "libvpx-vp9" => {
+                    assert!(
+                        knobs.contains(&"deadline") && knobs.contains(&"cpu-used"),
+                        "{format:?}"
+                    );
+                }
+                "libaom-av1" => {
+                    assert!(
+                        knobs.contains(&"row-mt") && knobs.contains(&"cpu-used"),
+                        "{format:?}"
+                    );
+                }
+                other => panic!("unexpected encoder {other} for {format:?}"),
+            }
+        }
+    }
+
+    #[test]
+    fn aom_crf_rejects_zero_quality_at_lossless() {
+        let low = encoder_options(VideoFormat::Mp4Av1, 0);
+        let high = encoder_options(VideoFormat::Mp4Av1, 100);
+        assert!(low.iter().any(|(k, v)| k == "crf" && v == "63"));
+        assert!(high.iter().any(|(k, v)| k == "crf" && v == "24"));
     }
 }

@@ -5,12 +5,14 @@ engine**. Rust orchestrates; FFmpeg does all demuxing, decoding, scaling,
 encoding and muxing through dynamically linked `libavcodec`,
 `libavformat`, `libavutil` and `libswscale`.
 
-- **Formats out:** MP4 (H.264 via libx264), WebM (VP9 via libvpx-vp9)
+- **Formats out:** MP4, WebM, MOV, MKV and AVI (H.264 via libx264;
+  VP9 via libvpx-vp9 for WebM), plus AV1 (libaom-av1) in MP4/WebM/MKV
+  and H.265/HEVC (libx265) in MP4/MOV
 - **Formats in:** anything FFmpeg can probe with a video stream — MP4,
   WebM, MKV, MOV, AVI, …
 - **Audio:** stream-copied when the target container accepts the codec
-  (AAC/MP3 into MP4, Vorbis/Opus into WebM), dropped otherwise — audio
-  is never transcoded
+  (AAC/MP3 into MP4/MOV/AVI, Vorbis/Opus into WebM, either family into
+  Matroska), dropped otherwise — audio is never transcoded
 - **No reimplementation:** no `ffmpeg-next`, no `dlopen`, no codecs in
   Rust — one `bindgen`-generated FFI layer over the shared libraries
 
@@ -35,10 +37,12 @@ and emits version cfgs so one crate builds across FFmpeg 6.x → 9.x.
   `libavutil`, `libswscale`
   - Debian/Ubuntu: `sudo apt install libavcodec-dev libavformat-dev
     libavutil-dev libswscale-dev pkg-config`
-- MP4 out requires an FFmpeg built with `--enable-libx264`, WebM out
-  with `--enable-libvpx` (both present in the distro/CI builds; a
-  missing encoder surfaces as `Error::EncoderNotFound` from
-  `VideoConverter::new`)
+- MP4/MOV/MKV/AVI out require an FFmpeg built with `--enable-libx264`,
+  WebM out with `--enable-libvpx`, AV1 out with `--enable-libaom-av1`
+  and HEVC out with `--enable-libx265` (all present in the distro/CI
+  builds). libx264/libvpx are checked in `VideoConverter::new`; the
+  other encoders are looked up when a conversion requests their format
+  and surface as `Error::EncoderNotFound` then
 - Verified against FFmpeg **6.1** (system) and expected to work on
   6.x–9.x
 
@@ -46,7 +50,7 @@ and emits version cfgs so one crate builds across FFmpeg 6.x → 9.x.
 
 ```bash
 cargo build
-cargo test          # 22 tests
+cargo test          # 27 tests
 cargo clippy --all-targets
 cargo run --example transcode -- input.mp4 output.webm --quality 85
 ```
@@ -87,7 +91,7 @@ let output = converter.convert(
 
 | Field | Type | Default | Meaning |
 |-------|------|---------|---------|
-| `format` | `VideoFormat` | `Mp4` | `Mp4` (H.264) or `WebM` (VP9) |
+| `format` | `VideoFormat` | `Mp4` | `Mp4`/`Mov`/`Mkv`/`Avi` (H.264), `WebM` (VP9), `Mp4Av1`/`WebMAv1`/`MkvAv1` (AV1), `Mp4Hevc`/`MovHevc` (H.265) |
 | `quality` | `u8` | `80` | 0–100; values above 100 are clamped to 100 |
 | `width` | `Option<u32>` | `None` | Target width in pixels |
 | `height` | `Option<u32>` | `None` | Target height in pixels |
@@ -96,8 +100,10 @@ let output = converter.convert(
 
 | Format | `quality` 0 → 100 |
 |--------|-------------------|
-| MP4 | libx264 CRF 51 → 18 (plus `preset=veryfast`) |
+| MP4, MOV, MKV, AVI | libx264 CRF 51 → 18 (plus `preset=veryfast`) |
 | WebM | libvpx-vp9 CRF 63 → 24 (plus `deadline=good`, `cpu-used=4`) |
+| AV1 (MP4/WebM/MKV) | libaom-av1 CRF 63 → 24 (plus `row-mt=1`, `cpu-used=4`) |
+| HEVC (MP4/MOV) | libx265 CRF 51 → 18 (plus `preset=veryfast`) |
 
 `crf_for_quality(format, quality)` exposes the mapping publicly.
 
@@ -135,7 +141,9 @@ iterator and progressive/HTTP output are planned for a later phase.
 Usage: transcode <input> <output> [options]
 
 Options:
-  --format <mp4|webm>       Output format (default: from output extension)
+  --format <fmt>            Output format: mp4, webm, mov, mkv, avi,
+                            mp4av1, webmav1, mkvav1, mp4hevc, movhevc
+                            (default: from output extension)
   --quality <0-100>         Quality (default: 80)
   --width <pixels>          Target width
   --height <pixels>         Target height
@@ -153,7 +161,8 @@ cargo run --example transcode -- clip.mov clip.webm --quality 70 --width 1280
   frames without a timestamp get `index × frame_ticks`.
 - Input format is sniffed from content; extensions on the input are
   irrelevant. Output format comes from `options.format` (or the file
-  extension in the CLI).
+  extension in the CLI; codec-qualified variants like AV1/HEVC cannot
+  be inferred and must be passed explicitly).
 - The `ffi` module is internal; the public surface is
   `VideoConverter`, `ConversionOptions`, `VideoFormat`,
   `VideoStream`/`VideoFrame`/`VideoEncoder` (streaming extension

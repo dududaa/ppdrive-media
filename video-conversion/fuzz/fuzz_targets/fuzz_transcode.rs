@@ -8,11 +8,18 @@ fuzz_target!(|data: &[u8]| {
         return;
     };
 
-    let format = if selector % 2 == 0 {
-        VideoFormat::Mp4
-    } else {
-        VideoFormat::WebM
-    };
+    let format = [
+        VideoFormat::Mp4,
+        VideoFormat::WebM,
+        VideoFormat::Mov,
+        VideoFormat::Mkv,
+        VideoFormat::Avi,
+        VideoFormat::Mp4Av1,
+        VideoFormat::WebMAv1,
+        VideoFormat::MkvAv1,
+        VideoFormat::Mp4Hevc,
+        VideoFormat::MovHevc,
+    ][usize::from(selector % 10)];
     let quality = selector % 101;
     let width = (selector & 0x80 != 0).then(|| u32::from(selector % 64) + 1);
     let height = (selector & 0x40 != 0).then(|| u32::from(selector % 64) + 1);

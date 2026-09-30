@@ -8,9 +8,11 @@ use crate::video::stream::{StreamEvent, VideoStream};
 /// Entry point for probing and converting videos through FFmpeg.
 ///
 /// The struct itself is a zero-sized handle; creating it verifies that
-/// both encoders (libx264 for MP4, libvpx-vp9 for WebM) are available
-/// in the linked FFmpeg libraries and lowers FFmpeg's log verbosity to
-/// errors only.
+/// both baseline encoders (libx264, libvpx-vp9) are available in the
+/// linked FFmpeg libraries and lowers FFmpeg's log verbosity to errors
+/// only. Encoders for other [`crate::VideoFormat`] variants
+/// (libaom-av1, libx265) are looked up lazily when a conversion using
+/// that format starts.
 ///
 /// Instances may be reused for any number of
 /// [`convert`](VideoConverter::convert) calls.
@@ -22,7 +24,11 @@ impl VideoConverter {
     ///
     /// Returns [`crate::Error::EncoderNotFound`] if either is missing,
     /// which can happen when FFmpeg was configured without
-    /// `--enable-libx264` or `--enable-libvpx`.
+    /// `--enable-libx264` or `--enable-libvpx`. Encoders needed by
+    /// other formats (libaom-av1, libx265) are not checked here; a
+    /// conversion requesting a format whose encoder is missing fails
+    /// with [`crate::Error::EncoderNotFound`] at
+    /// [`convert`](VideoConverter::convert) time instead.
     ///
     /// FFmpeg's global log level is set to `AV_LOG_ERROR` on first call
     /// and never raised above it.
@@ -42,9 +48,9 @@ impl VideoConverter {
     /// `input` may be any container/codec combination FFmpeg can decode
     /// (MP4, WebM, MKV, MOV, …), probed from content — file extensions
     /// are irrelevant. An input's audio track is stream-copied when the
-    /// target container accepts its codec (AAC/MP3 into MP4,
-    /// Vorbis/Opus into WebM) and dropped otherwise — audio is never
-    /// transcoded.
+    /// target container accepts its codec (AAC/MP3 into MP4, MOV and
+    /// AVI, Vorbis/Opus into WebM, either family into Matroska) and
+    /// dropped otherwise — audio is never transcoded.
     ///
     /// Pipeline: demux → decode → optional resize/conversion in the
     /// encoder → encode + mux. Frame timestamps of the source are
@@ -52,7 +58,9 @@ impl VideoConverter {
     ///
     /// Returns [`Error::InvalidInput`] for empty input or a `Some(0)`
     /// width/height, [`Error::UnsupportedFormat`] when the input holds
-    /// no video stream.
+    /// no video stream, and [`Error::EncoderNotFound`] when `options`
+    /// requests a format whose encoder is missing from the linked
+    /// FFmpeg build.
     pub fn convert(&self, input: &[u8], options: ConversionOptions) -> Result<Vec<u8>, Error> {
         options.validate()?;
         let mut stream = VideoStream::open(input)?;
@@ -160,12 +168,29 @@ mod tests {
     }
 
     #[test]
-    fn crf_mapping_covers_both_formats() {
-        assert_eq!(crf_for_quality(VideoFormat::Mp4, 0), 51);
-        assert_eq!(crf_for_quality(VideoFormat::Mp4, 100), 18);
-        assert_eq!(crf_for_quality(VideoFormat::WebM, 0), 63);
-        assert_eq!(crf_for_quality(VideoFormat::WebM, 100), 24);
+    fn crf_mapping_covers_all_formats() {
+        for format in [
+            VideoFormat::Mp4,
+            VideoFormat::Mov,
+            VideoFormat::Mkv,
+            VideoFormat::Avi,
+            VideoFormat::Mp4Hevc,
+            VideoFormat::MovHevc,
+        ] {
+            assert_eq!(crf_for_quality(format, 0), 51, "{format:?}");
+            assert_eq!(crf_for_quality(format, 100), 18, "{format:?}");
+        }
+        for format in [
+            VideoFormat::WebM,
+            VideoFormat::Mp4Av1,
+            VideoFormat::WebMAv1,
+            VideoFormat::MkvAv1,
+        ] {
+            assert_eq!(crf_for_quality(format, 0), 63, "{format:?}");
+            assert_eq!(crf_for_quality(format, 100), 24, "{format:?}");
+        }
         assert_eq!(crf_for_quality(VideoFormat::Mp4, 200), 18);
+        assert_eq!(crf_for_quality(VideoFormat::Mp4Av1, 200), 24);
     }
 
     #[test]

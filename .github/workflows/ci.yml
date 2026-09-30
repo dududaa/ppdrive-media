@@ -108,6 +108,11 @@ jobs:
   fuzz:
     name: Fuzz (smoke)
     runs-on: ubuntu-24.04
+    env:
+      # libx265 leaks a fixed 1168-byte block inside x265_encoder_close
+      # (upstream, unreleased fix). Suppress just that module so leaks in
+      # our code or the rest of FFmpeg still fail the target.
+      LSAN_OPTIONS: suppressions=${{ github.workspace }}/video-conversion/fuzz/lsan.supp
     # Fuzzing exercises the FFmpeg libraries themselves; a crash found in
     # upstream FFmpeg code should surface as a visible (but non-blocking)
     # signal rather than gating every pull request. The tolerance lives on

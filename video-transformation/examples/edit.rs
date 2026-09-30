@@ -20,7 +20,9 @@ Options (applied in the order given):
   --speed <factor>           Playback speed (audio is dropped)
   --reverse                  Reverse playback (audio is dropped)
   --filter <chain>           Raw libavfilter chain, applied last
-  --format <mp4|webm>        Output format (default: from output extension)
+  --format <fmt>            Output format: mp4, webm, mov, mkv, avi,
+                            mp4av1, webmav1, mkvav1, mp4hevc, movhevc
+                            (default: from output extension)
   --quality <0-100>          Output quality (default: 80)
   -h, --help                 Show this help
 ";
@@ -218,6 +220,14 @@ fn parse_args() -> Result<Args, String> {
                 format = Some(match value.to_ascii_lowercase().as_str() {
                     "mp4" => VideoFormat::Mp4,
                     "webm" => VideoFormat::WebM,
+                    "mov" => VideoFormat::Mov,
+                    "mkv" => VideoFormat::Mkv,
+                    "avi" => VideoFormat::Avi,
+                    "mp4av1" => VideoFormat::Mp4Av1,
+                    "webmav1" => VideoFormat::WebMAv1,
+                    "mkvav1" => VideoFormat::MkvAv1,
+                    "mp4hevc" => VideoFormat::Mp4Hevc,
+                    "movhevc" => VideoFormat::MovHevc,
                     _ => return Err(format!("unknown format: {value}")),
                 });
             }
