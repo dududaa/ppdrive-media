@@ -4,7 +4,7 @@
 //! Rust orchestrates and validates; FFmpeg performs all pixel work in
 //! a single `buffer → filter chain → buffersink` graph pass. Decoding
 //! and encoding are reused from the `image-conversion` crate via its
-//! public [`Frame`] bridge.
+//! public `image_conversion::Frame` bridge.
 //!
 //! ```no_run
 //! use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};

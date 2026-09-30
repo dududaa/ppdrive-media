@@ -1,4 +1,4 @@
-//! ppdrive plugin cdylib for [`image-conversion`].
+//! ppdrive plugin cdylib for `image-conversion`.
 //!
 //! `plugin_dispatch` lives in this cdylib-only crate instead of in the
 //! `image-conversion` library itself. The library rlib is also linked

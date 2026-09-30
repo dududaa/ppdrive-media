@@ -1,4 +1,4 @@
-//! ppdrive plugin cdylib for [`video-compression`].
+//! ppdrive plugin cdylib for `video-compression`.
 //!
 //! `plugin_dispatch` lives in this cdylib-only crate instead of in the
 //! `video-compression` library itself. The library rlib is also linked

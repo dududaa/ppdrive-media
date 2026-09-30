@@ -30,7 +30,7 @@ pub struct AudioStreamParams {
     pub sample_rate: u32,
     /// Channel count (mono/stereo for this crate's pipelines).
     pub channels: u8,
-    /// Raw [`ffi::AVSampleFormat`] value of the decoded frames.
+    /// Raw `ffi::AVSampleFormat` value of the decoded frames.
     pub sample_fmt: i32,
     /// FFmpeg channel-layout description, e.g. `"stereo"` or `"mono"`.
     pub channel_layout: String,

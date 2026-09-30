@@ -1,4 +1,4 @@
-//! ppdrive plugin cdylib for [`audio-conversion`].
+//! ppdrive plugin cdylib for `audio-conversion`.
 //!
 //! `plugin_dispatch` lives in this cdylib-only crate instead of in the
 //! `audio-conversion` library itself, following the same structural

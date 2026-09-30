@@ -205,7 +205,7 @@ impl<'a> VideoStream<'a> {
         &self.info
     }
 
-    /// Builds an [`AudioSource`] for stream-copying the input's audio
+    /// Builds an [`ffi::encode::AudioSource`] for stream-copying the input's audio
     /// track into `format`, or `None` when the input has no audio track
     /// or its codec is not accepted by the target container (the audio
     /// is then dropped, never transcoded).
