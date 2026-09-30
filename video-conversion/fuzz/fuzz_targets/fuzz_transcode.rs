@@ -23,12 +23,25 @@ fuzz_target!(|data: &[u8]| {
     let quality = selector % 101;
     let width = (selector & 0x80 != 0).then(|| u32::from(selector % 64) + 1);
     let height = (selector & 0x40 != 0).then(|| u32::from(selector % 64) + 1);
+    let scale = (selector & 0x20 != 0).then(|| f32::from(selector % 40) / 10.0 + 0.1);
+    let effort = (selector & 0x10 != 0).then(|| selector % 101);
+    let fps = (selector & 0x08 != 0).then(|| u32::from(selector % 30) + 1);
+    let drop_audio = selector & 0x04 != 0;
+    let max_bytes = (selector & 0x02 != 0)
+        .then(|| payload.first().copied())
+        .flatten()
+        .map(|b| u64::from(b) * 1024);
 
     let options = ConversionOptions {
         format,
         quality,
         width,
         height,
+        scale,
+        effort,
+        max_bytes,
+        fps,
+        drop_audio,
     };
 
     if let Ok(converter) = VideoConverter::new() {

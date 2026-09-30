@@ -83,6 +83,7 @@ let output = converter.convert(
         quality: 80,
         width: Some(1280),
         height: None,
+        ..ConversionOptions::default()
     },
 )?;
 ```
@@ -95,6 +96,11 @@ let output = converter.convert(
 | `quality` | `u8` | `80` | 0–100; values above 100 are clamped to 100 |
 | `width` | `Option<u32>` | `None` | Target width in pixels |
 | `height` | `Option<u32>` | `None` | Target height in pixels |
+| `scale` | `Option<f32>` | `None` | Scale factor applied when both `width`/`height` are `None`; must be finite and > 0 |
+| `effort` | `Option<u8>` | `None` | Encoder effort 0–100; `None` keeps the encoder's defaults (`preset=veryfast` / `cpu-used=4`) |
+| `max_bytes` | `Option<u64>` | `None` | Search quality (≤ 8 full re-encodes) for an output at most this many bytes |
+| `fps` | `Option<u32>` | `None` | Force a constant output frame rate (1–1000); frames are dropped/duplicated to fit |
+| `drop_audio` | `bool` | `false` | Drop the input's audio track instead of stream-copying it |
 
 ### Quality mapping (per format)
 
@@ -109,12 +115,45 @@ let output = converter.convert(
 
 ### Resizing
 
-- `width`/`height` both `None` → keep input dimensions
+- `width`/`height` both `None` → keep input dimensions (or apply
+  `scale` when set)
 - only one given → other derived to **preserve aspect ratio**
-- both given → **exact** size (aspect ratio not preserved)
+- both given → **exact** size (aspect ratio not preserved); `scale` is
+  ignored
 - `0` is rejected with `Error::InvalidInput`
 - dimensions round **up to even** (H.264/VP9 chroma subsampling),
   e.g. `63×47 → 64×48`
+- `scale` rounds each dimension to the nearest pixel and keeps at
+  least `1×1`
+
+### Effort
+
+`None` keeps the encoder's defaults. `Some(e)` maps 0 (fastest) → 100
+(slowest): x264/x265 step through the nine libx264 presets
+(`ultrafast` … `veryslow`), VP9/AV1 set `cpu-used = 8 − e·8/100`
+(slower encoders produce smaller files at the same CRF).
+
+### Frame rate
+
+`fps: Some(n)` (1–1000, anything else is `Error::InvalidInput`)
+resamples output onto a constant timeline: frames are dropped when
+they land on an occupied slot and gaps up to five seconds are filled
+by duplicating the previous frame. Audio is untouched. `None` keeps
+source timestamps in the source time base.
+
+### Size budget
+
+`max_bytes: Some(n)` binary-searches `quality` so the muxed output is
+at most `n` bytes, starting from `quality` and walking down (at most
+eight full re-encodes of the input). Failing even at quality 0 returns
+`Error::TargetSizeUnreachable`. `convert_to` rejects a size budget —
+its packet sink is a side effect and cannot be re-run.
+
+### Audio
+
+The input's audio is stream-copied when the target container accepts
+the codec, dropped otherwise (and always with `drop_audio: true`) —
+never transcoded.
 
 ## Errors
 
@@ -122,9 +161,10 @@ let output = converter.convert(
 |---------|------|
 | `FfmpegError(msg)` | FFmpeg call failed (`av_strerror` message) |
 | `DecoderNotFound` | no decoder for the input video in this FFmpeg |
-| `EncoderNotFound` | libx264 or libvpx-vp9 missing from FFmpeg |
-| `InvalidInput` | empty input, zero width/height, or a container that would encode no frames |
+| `EncoderNotFound` | the requested format's encoder (libx264, libvpx-vp9, libaom-av1 or libx265) missing from FFmpeg |
+| `InvalidInput` | empty input, zero width/height, `max_bytes: Some(0)`, `fps` outside 1–1000, a bad `scale`, a size budget on `convert_to`, or a container that would encode no frames |
 | `UnsupportedFormat` | input holds no video stream |
+| `TargetSizeUnreachable` | `max_bytes` cannot be met even at quality 0 |
 | `LimitExceeded(msg)` | a safety limit would be exceeded (used by transformation guards, e.g. `Reverse` frame buffering) |
 
 ## Streaming (planned)
@@ -147,18 +187,26 @@ Options:
   --quality <0-100>         Quality (default: 80)
   --width <pixels>          Target width
   --height <pixels>         Target height
+  --scale <factor>          Scale factor applied when width/height are omitted
+  --effort <0-100>          Encoder effort (default: encoder defaults)
+  --max-bytes <bytes>       Search quality for an output at most this size
+  --fps <1-1000>            Force a constant output frame rate
+  --no-audio                 Drop the input's audio track
   -h, --help                Show this help
 ```
 
 ```bash
 cargo run --example transcode -- clip.mov clip.webm --quality 70 --width 1280
 # clip.mov: 5242880 bytes -> clip.webm: 1310720 bytes (25.0%)
+cargo run --example transcode -- in.mp4 out.mp4 --scale 0.5 --max-bytes 200000 --no-audio
 ```
 
 ## Notes & limitations
 
-- Frame timestamps of the source are preserved in the source time base;
-  frames without a timestamp get `index × frame_ticks`.
+- Frame timestamps of the source are preserved in the source time
+  base when `fps` is `None`; frames without a timestamp get
+  `index × frame_ticks`. With `fps` set, output is resampled onto a
+  constant-rate timeline as described above.
 - Input format is sniffed from content; extensions on the input are
   irrelevant. Output format comes from `options.format` (or the file
   extension in the CLI; codec-qualified variants like AV1/HEVC cannot

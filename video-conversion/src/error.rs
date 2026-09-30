@@ -25,6 +25,9 @@ pub enum Error {
     /// limit and how to stay under it (e.g. the `Reverse` decoded-frame
     /// buffering estimate over 1 GiB).
     LimitExceeded(String),
+    /// `ConversionOptions::max_bytes` cannot be satisfied even at
+    /// quality 0.
+    TargetSizeUnreachable,
 }
 
 impl Error {
@@ -44,6 +47,9 @@ impl fmt::Display for Error {
             Error::InvalidInput => write!(f, "invalid or unreadable input video"),
             Error::UnsupportedFormat => write!(f, "input contains no video stream"),
             Error::LimitExceeded(msg) => write!(f, "{msg}"),
+            Error::TargetSizeUnreachable => {
+                write!(f, "output cannot fit the requested maximum size")
+            }
         }
     }
 }

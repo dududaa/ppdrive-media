@@ -11,9 +11,36 @@ pub(crate) fn round_to_even(width: u32, height: u32, force_even: bool) -> (u32, 
     (width + width % 2, height + height % 2)
 }
 
+/// Applies the optional proportional `scale` factor to the source
+/// dimensions: `round(source × scale)`, minimum 1 px per axis.
+/// Non-finite, zero or negative factors, or results beyond `u32`, are
+/// rejected with [`Error::InvalidInput`].
+fn scaled_dimensions(
+    src_width: u32,
+    src_height: u32,
+    scale: Option<f32>,
+) -> Result<(u32, u32), Error> {
+    let Some(scale) = scale else {
+        return Ok((src_width, src_height));
+    };
+    if !scale.is_finite() || scale <= 0.0 {
+        return Err(Error::InvalidInput);
+    }
+    let width = (f64::from(src_width) * f64::from(scale)).round();
+    let height = (f64::from(src_height) * f64::from(scale)).round();
+    if !width.is_finite() || !height.is_finite() {
+        return Err(Error::InvalidInput);
+    }
+    if width > f64::from(u32::MAX) || height > f64::from(u32::MAX) {
+        return Err(Error::InvalidInput);
+    }
+    Ok((width.max(1.0) as u32, height.max(1.0) as u32))
+}
+
 /// Resolves the output dimensions against the input dimensions:
-/// both options absent → input size, one present → aspect-preserving
-/// scale, both present → exact size.
+/// both options absent → `scale` (or the input size), one present →
+/// aspect-preserving scale, both present → exact size. An explicit
+/// `width`/`height` wins over `scale`.
 pub(crate) fn target_dimensions(
     input_width: u32,
     input_height: u32,
@@ -23,7 +50,7 @@ pub(crate) fn target_dimensions(
         return Err(Error::InvalidInput);
     }
     match (options.width, options.height) {
-        (None, None) => Ok((input_width, input_height)),
+        (None, None) => scaled_dimensions(input_width, input_height, options.scale),
         (Some(w), None) => {
             if w == 0 {
                 return Err(Error::InvalidInput);
@@ -87,5 +114,54 @@ mod tests {
             target_dimensions(320, 180, &options).unwrap_err(),
             Error::InvalidInput
         );
+    }
+
+    #[test]
+    fn scale_applies_when_dimensions_absent() {
+        let options = ConversionOptions {
+            scale: Some(0.5),
+            ..ConversionOptions::default()
+        };
+        assert_eq!(target_dimensions(320, 180, &options).unwrap(), (160, 90));
+    }
+
+    #[test]
+    fn scale_rounds_and_keeps_at_least_one_pixel() {
+        let options = ConversionOptions {
+            scale: Some(0.04),
+            ..ConversionOptions::default()
+        };
+        assert_eq!(target_dimensions(320, 180, &options).unwrap(), (13, 7));
+
+        let options = ConversionOptions {
+            scale: Some(0.001),
+            ..ConversionOptions::default()
+        };
+        assert_eq!(target_dimensions(320, 180, &options).unwrap(), (1, 1));
+    }
+
+    #[test]
+    fn explicit_dimensions_win_over_scale() {
+        let options = ConversionOptions {
+            width: Some(160),
+            scale: Some(0.25),
+            ..ConversionOptions::default()
+        };
+        assert_eq!(target_dimensions(320, 180, &options).unwrap(), (160, 90));
+    }
+
+    #[test]
+    fn invalid_scale_is_rejected() {
+        for scale in [0.0, -1.0, f32::NAN, f32::INFINITY] {
+            let options = ConversionOptions {
+                scale: Some(scale),
+                ..ConversionOptions::default()
+            };
+            assert_eq!(
+                target_dimensions(320, 180, &options).unwrap_err(),
+                Error::InvalidInput,
+                "scale {scale}"
+            );
+        }
     }
 }

@@ -44,6 +44,17 @@ impl Frame {
     pub fn set_pts(&mut self, pts: i64) {
         unsafe { (*self.0).pts = pts };
     }
+
+    /// Returns a new handle referencing the same frame buffers
+    /// (refcounted via `av_frame_ref`, not a deep copy).
+    pub fn try_clone(&self) -> Result<Frame, Error> {
+        let new = Frame::new()?;
+        let ret = unsafe { av_frame_ref(new.0, self.0) };
+        if ret < 0 {
+            return Err(Error::from_code(ret));
+        }
+        Ok(new)
+    }
 }
 
 impl Drop for Frame {

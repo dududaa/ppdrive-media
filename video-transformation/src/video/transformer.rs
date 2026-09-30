@@ -103,6 +103,8 @@ impl VideoTransformer {
         let mut encoder = VideoEncoder::muxed(
             format,
             quality,
+            None,
+            None,
             sink_width + sink_width % 2,
             sink_height + sink_height % 2,
             &encoder_info,

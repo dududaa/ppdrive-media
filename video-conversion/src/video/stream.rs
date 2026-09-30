@@ -20,6 +20,10 @@ impl VideoFrame {
         VideoFrame { inner }
     }
 
+    pub(crate) fn try_clone(&self) -> Result<VideoFrame, Error> {
+        Ok(VideoFrame::new(self.inner.try_clone()?))
+    }
+
     /// Frame width in pixels.
     pub fn width(&self) -> u32 {
         self.inner.width()

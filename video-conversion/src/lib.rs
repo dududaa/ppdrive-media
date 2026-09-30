@@ -17,6 +17,7 @@
 //!         quality: 80,
 //!         width: Some(1280),
 //!         height: None,
+//!         ..ConversionOptions::default()
 //!     },
 //! )?;
 //! # Ok::<(), video_conversion::Error>(())

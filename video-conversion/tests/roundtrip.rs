@@ -24,6 +24,7 @@ fn convert(
             quality,
             width,
             height,
+            ..ConversionOptions::default()
         },
     )
 }

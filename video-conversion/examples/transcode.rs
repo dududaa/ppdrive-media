@@ -11,6 +11,11 @@ Options:
   --quality <0-100>         Quality (default: 80)
   --width <pixels>          Target width
   --height <pixels>         Target height
+  --scale <factor>          Scale factor applied when width/height are omitted
+  --effort <0-100>          Encoder effort (default: encoder defaults)
+  --max-bytes <bytes>       Search quality for an output at most this size
+  --fps <1-1000>            Force a constant output frame rate
+  --no-audio                 Drop the input's audio track
   -h, --help                Show this help
 ";
 
@@ -68,6 +73,31 @@ fn parse_args() -> Result<Args, String> {
                     .map_err(|_| "height must be an integer".to_string())?;
                 options.height = Some(value);
             }
+            "--scale" => {
+                let value: f32 = take_value("--scale")?
+                    .parse()
+                    .map_err(|_| "scale must be a number".to_string())?;
+                options.scale = Some(value);
+            }
+            "--effort" => {
+                let value: u8 = take_value("--effort")?
+                    .parse()
+                    .map_err(|_| "effort must be an integer 0-100".to_string())?;
+                options.effort = Some(value.min(100));
+            }
+            "--max-bytes" => {
+                let value: u64 = take_value("--max-bytes")?
+                    .parse()
+                    .map_err(|_| "max-bytes must be an integer".to_string())?;
+                options.max_bytes = Some(value);
+            }
+            "--fps" => {
+                let value: u32 = take_value("--fps")?
+                    .parse()
+                    .map_err(|_| "fps must be an integer".to_string())?;
+                options.fps = Some(value);
+            }
+            "--no-audio" => options.drop_audio = true,
             _ if arg.starts_with('-') => {
                 return Err(format!("unknown option: {arg}"));
             }
