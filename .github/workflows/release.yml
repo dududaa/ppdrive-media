@@ -101,61 +101,61 @@ jobs:
           fi
 
           mv "target/release/${prefix}image_conversion.${lib_ext}" \
-            "ppff-image-conversion-${os}-${arch}.${lib_ext}"
+            "ppdrive-image-conversion-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}image_transformation.${lib_ext}" \
-            "ppff-image-transformation-${os}-${arch}.${lib_ext}"
+            "ppdrive-image-transformation-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}audio_conversion.${lib_ext}" \
-            "ppff-audio-conversion-${os}-${arch}.${lib_ext}"
+            "ppdrive-audio-conversion-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}audio_effects.${lib_ext}" \
-            "ppff-audio-effects-${os}-${arch}.${lib_ext}"
+            "ppdrive-audio-effects-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}video_conversion.${lib_ext}" \
-            "ppff-video-conversion-${os}-${arch}.${lib_ext}"
+            "ppdrive-video-conversion-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}video_transformation.${lib_ext}" \
-            "ppff-video-transformation-${os}-${arch}.${lib_ext}"
+            "ppdrive-video-transformation-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}media_streaming.${lib_ext}" \
-            "ppff-media-streaming-${os}-${arch}.${lib_ext}"
-          ls -la ppff-*
+            "ppdrive-media-streaming-${os}-${arch}.${lib_ext}"
+          ls -la ppdrive-*
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-image-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-image-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-image-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-image-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-image-transformation-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-image-transformation-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-image-transformation-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-image-transformation-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-audio-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-audio-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-audio-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-audio-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-audio-effects-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-video-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-video-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-video-conversion-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-video-conversion-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-video-transformation-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-video-transformation-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-video-transformation-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-video-transformation-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         with:
-          name: ppff-media-streaming-${{ matrix.os_name }}-${{ matrix.arch }}
-          path: ppff-media-streaming-${{ matrix.os_name }}-${{ matrix.arch }}.*
+          name: ppdrive-media-streaming-${{ matrix.os_name }}-${{ matrix.arch }}
+          path: ppdrive-media-streaming-${{ matrix.os_name }}-${{ matrix.arch }}.*
           if-no-files-found: error
 
   release:
@@ -169,7 +169,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: ppff-*
+          pattern: ppdrive-*
           merge-multiple: true
 
       - name: Create or update release
