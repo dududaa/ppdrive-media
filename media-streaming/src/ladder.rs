@@ -130,6 +130,47 @@ fn even_up(value: u32) -> u32 {
     }
 }
 
+/// Pixel aspect ratio that makes `width`/`height` display exactly the
+/// source's coded aspect ratio.
+///
+/// FFmpeg's DASH muxer requires `width * sar.num / height * sar.den`
+/// to reduce to an identical rational for every video representation
+/// in one adaptation set, but even-rounded ladder dims (640×360 vs
+/// 428×240 from a 16:9 source) do not divide evenly. Tagging each rung
+/// with a compensating SAR keeps the display aspect ratio of every
+/// rendition equal to the source's — the muxer-level equivalent of
+/// `scale…,setdar=16/9`.
+pub(crate) fn display_sar(
+    source_width: u32,
+    source_height: u32,
+    width: u32,
+    height: u32,
+) -> (i32, i32) {
+    // Want width*sar_num / height*sar_den == source_width/source_height,
+    // so sar_num/sar_den = height*source_width / (width*source_height),
+    // reduced to lowest terms.
+    let num = u128::from(height) * u128::from(source_width);
+    let den = u128::from(width) * u128::from(source_height);
+    if num == 0 || den == 0 {
+        return (1, 1);
+    }
+    let divisor = gcd(num, den);
+    let (num, den) = (num / divisor, den / divisor);
+    if num > i32::MAX as u128 || den > i32::MAX as u128 {
+        return (1, 1);
+    }
+    (num as i32, den as i32)
+}
+
+fn gcd(mut a: u128, mut b: u128) -> u128 {
+    while b != 0 {
+        let rem = a % b;
+        a = b;
+        b = rem;
+    }
+    a
+}
+
 /// Advertised bitrate for a rung: a nominal ladder for standard
 /// heights, an area×rate estimate for everything smaller.
 pub(crate) fn bitrate_for(width: u32, height: u32, fps: f64) -> u64 {
@@ -252,5 +293,39 @@ mod tests {
         assert_eq!(bitrate_for(426, 240, 30.0), 400_000);
         let tiny = bitrate_for(160, 90, 25.0);
         assert!(tiny >= 100_000, "{tiny}");
+    }
+
+    /// `width * sar_num / height * sar_den` must reduce to exactly
+    /// `source_width / source_height` for every rung — the invariant
+    /// FFmpeg's DASH muxer enforces across one adaptation set.
+    fn assert_display_ratio(source: (u32, u32), rung: (u32, u32)) {
+        let (sar_num, sar_den) = display_sar(source.0, source.1, rung.0, rung.1);
+        let lhs = i64::from(rung.0) * i64::from(sar_num) * i64::from(source.1);
+        let rhs = i64::from(source.0) * i64::from(rung.1) * i64::from(sar_den);
+        assert_eq!(
+            lhs, rhs,
+            "source {source:?} rung {rung:?} sar {sar_num}:{sar_den}"
+        );
+    }
+
+    #[test]
+    fn display_sar_keeps_every_rung_at_the_source_display_ratio() {
+        // Exact rungs stay square-pixel.
+        assert_eq!(display_sar(640, 360, 640, 360), (1, 1));
+        // Even-rounded 240p rung of a 16:9 source needs a compensating SAR.
+        assert_eq!(display_sar(640, 360, 428, 240), (320, 321));
+        assert_display_ratio((640, 360), (428, 240));
+        assert_display_ratio((640, 360), (640, 360));
+        assert_display_ratio((320, 180), (200, 112));
+        assert_display_ratio((1920, 1080), (854, 480));
+        assert_display_ratio((1920, 1080), (640, 360));
+        assert_display_ratio((720, 576), (320, 240));
+        assert_display_ratio((100, 333), (50, 166));
+    }
+
+    #[test]
+    fn display_sar_degenerates_to_square_pixels() {
+        assert_eq!(display_sar(640, 360, 0, 240), (1, 1));
+        assert_eq!(display_sar(640, 360, 428, 0), (1, 1));
     }
 }

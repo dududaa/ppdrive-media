@@ -66,11 +66,14 @@ impl SegmentSession {
 
     /// Declares one video rendition stream from an open packetized
     /// encoder's params; `bitrate` feeds the playlist's bandwidth
-    /// attributes.
+    /// attributes and `sar` is the pixel aspect ratio that keeps the
+    /// rendition's display aspect ratio equal to the source's (the
+    /// DASH muxer rejects an adaptation set whose members disagree).
     pub fn add_video_stream(
         &mut self,
         params: &VideoEncoderParams,
         bitrate: u64,
+        sar: (i32, i32),
     ) -> Result<usize, Error> {
         let codec_id = ffi::codec_id_by_name(&params.codec_name)?;
         unsafe {
@@ -84,6 +87,12 @@ impl SegmentSession {
             (*par).format = ffi::av_get_pix_fmt(pix_fmt.as_ptr()) as i32;
             (*par).bit_rate = bitrate as i64;
             ffi::set_extradata(par, &params.extradata)?;
+            let sar = AVRational {
+                num: sar.0,
+                den: sar.1,
+            };
+            (*par).sample_aspect_ratio = sar;
+            (*stream).sample_aspect_ratio = sar;
             (*stream).time_base = AVRational {
                 num: params.time_base_num,
                 den: params.time_base_den,

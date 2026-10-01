@@ -181,7 +181,8 @@ fn package_video(
     let mut session = session::SegmentSession::new(options.protocol, playlist)?;
     let mut video_ids = Vec::with_capacity(encoders.len());
     for (encoder, rung) in encoders.iter().zip(&rungs) {
-        video_ids.push(session.add_video_stream(encoder.params(), rung.bitrate)?);
+        let sar = ladder::display_sar(info.width, info.height, rung.width, rung.height);
+        video_ids.push(session.add_video_stream(encoder.params(), rung.bitrate, sar)?);
     }
     let hls = options.protocol == options::StreamingProtocol::Hls;
     let mut audio_ids = Vec::new();

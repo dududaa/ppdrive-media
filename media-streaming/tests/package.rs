@@ -262,3 +262,40 @@ fn stream_file_creates_missing_output_directory() {
     assert!(output.playlist.is_file());
     assert!(out.is_dir());
 }
+
+/// A 640×360 source auto-ladders to 360p + 240p rungs; the 240p rung
+/// even-rounds to 428×240, whose pixel ratio (107/60) differs from the
+/// source's 16/9. Before the per-rung SAR parity fix, FFmpeg's DASH
+/// muxer rejected this with "Conflicting stream aspect ratios values
+/// in Adaptation Set 1" and the packaging failed with EINVAL.
+#[test]
+fn dash_auto_ladder_multi_rung_writes_all_video_representations() {
+    let dir = TempDir::new("dash-ladder");
+    let out = dir.path().join("out");
+    let options = StreamingOptions {
+        protocol: StreamingProtocol::Dash,
+        segment_duration: 1,
+        ..StreamingOptions::default()
+    };
+    let streamer = MediaStreamer::new().unwrap();
+    let output = streamer
+        .stream(&fixture("input_640x360.mp4"), &out, &options)
+        .unwrap();
+
+    let mpd = read(&output.playlist);
+    assert!(mpd.contains("<MPD"), "{mpd}");
+    // Two video representations (640x360 and 428x240) plus audio.
+    assert!(mpd.contains("width=\"640\""), "{mpd}");
+    assert!(mpd.contains("width=\"428\""), "{mpd}");
+    assert!(mpd.contains("video/mp4"), "{mpd}");
+    assert!(mpd.contains("audio/mp4"), "{mpd}");
+    assert!(
+        output.files.iter().any(|f| {
+            f.file_name()
+                .and_then(|n| n.to_str())
+                .is_some_and(|n| n.starts_with("chunk-stream"))
+        }),
+        "{:?}",
+        output.files
+    );
+}
