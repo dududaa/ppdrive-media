@@ -1,5 +1,5 @@
-use ppff_audio_conversion::AudioFormat;
 use audio_effects::{AudioEffects, EffectOperation, EffectOptions};
+use ppff_audio_conversion::AudioFormat;
 use std::process::ExitCode;
 
 const USAGE: &str = "\

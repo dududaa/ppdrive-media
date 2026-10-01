@@ -28,11 +28,11 @@ mod ffi;
 mod video;
 
 use ppdrive::plugin::loader::DispatchResponse;
+pub use ppff_video_conversion::{Error, VideoFormat};
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;
 pub use video::{TransformOperation, TransformOptions, VideoTransformer};
-pub use ppff_video_conversion::{Error, VideoFormat};
 
 /// ppdrive plugin entry point: transforms a video with libavfilter.
 ///

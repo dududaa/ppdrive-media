@@ -409,6 +409,40 @@ mod tests {
     }
 
     #[test]
+    fn mkv_copies_compatible_audio() {
+        let input = fixture("input_audio.mp4");
+        let converter = VideoConverter::new().unwrap();
+        let output = converter
+            .convert(
+                &input,
+                ConversionOptions {
+                    format: VideoFormat::Mkv,
+                    ..ConversionOptions::default()
+                },
+            )
+            .unwrap();
+        let stream = VideoStream::open(&output).unwrap();
+        assert!(stream.info().has_audio);
+    }
+
+    #[test]
+    fn avi_copies_compatible_audio() {
+        let input = fixture("input_audio.mp4");
+        let converter = VideoConverter::new().unwrap();
+        let output = converter
+            .convert(
+                &input,
+                ConversionOptions {
+                    format: VideoFormat::Avi,
+                    ..ConversionOptions::default()
+                },
+            )
+            .unwrap();
+        let stream = VideoStream::open(&output).unwrap();
+        assert!(stream.info().has_audio);
+    }
+
+    #[test]
     fn convert_to_emits_params_then_packets() {
         let input = fixture("input.mp4");
         let converter = VideoConverter::new().unwrap();

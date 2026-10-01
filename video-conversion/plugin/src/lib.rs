@@ -7,10 +7,10 @@
 //! `plugin_dispatch` at link time (a hard error with `rust-lld`).
 
 use ppdrive::plugin::loader::DispatchResponse;
+use ppff_video_conversion::{ConversionOptions, VideoConverter};
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;
-use ppff_video_conversion::{ConversionOptions, VideoConverter};
 
 /// ppdrive plugin entry point: demuxes, decodes and converts a video.
 ///

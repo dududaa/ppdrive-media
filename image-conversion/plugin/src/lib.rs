@@ -6,8 +6,8 @@
 //! symbol defined there would collide with that crate's own
 //! `plugin_dispatch` at link time (a hard error with `rust-lld`).
 
-use ppff_image_conversion::{ConversionOptions, ImageConverter};
 use ppdrive::plugin::loader::DispatchResponse;
+use ppff_image_conversion::{ConversionOptions, ImageConverter};
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;

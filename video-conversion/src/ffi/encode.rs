@@ -195,6 +195,12 @@ impl Encoder {
                     if ret < 0 {
                         return Err(Error::from_code(ret));
                     }
+                    // The demuxed input carries its source container's tag
+                    // (e.g. `mp4a`), which the Matroska and AVI muxers
+                    // reject as incompatible at `avformat_write_header`.
+                    // Clear it so the muxer picks a compatible tag; MP4 and
+                    // MOV overwrite it either way.
+                    (*(*audio_stream).codecpar).codec_tag = 0;
                     audio_out_idx = (*audio_stream).index;
                 }
 

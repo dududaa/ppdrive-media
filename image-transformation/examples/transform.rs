@@ -1,5 +1,5 @@
-use ppff_image_conversion::ImageFormat;
 use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};
+use ppff_image_conversion::ImageFormat;
 use std::process::ExitCode;
 
 const USAGE: &str = "\

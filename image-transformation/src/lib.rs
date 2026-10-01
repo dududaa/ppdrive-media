@@ -28,8 +28,8 @@ mod ffi;
 mod image;
 
 pub use image::{ImageTransformer, TransformOperation, TransformOptions};
-pub use ppff_image_conversion::{Error, ImageFormat};
 use ppdrive::plugin::loader::DispatchResponse;
+pub use ppff_image_conversion::{Error, ImageFormat};
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;

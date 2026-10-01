@@ -12,8 +12,8 @@
 //! written into, because one call produces many files (playlists plus
 //! segments).
 
-use ppff_media_streaming::{MediaStreamer, StreamingOptions};
 use ppdrive::plugin::loader::DispatchResponse;
+use ppff_media_streaming::{MediaStreamer, StreamingOptions};
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;

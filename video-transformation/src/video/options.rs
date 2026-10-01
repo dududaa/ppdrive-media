@@ -1,5 +1,5 @@
-use serde::Deserialize;
 use ppff_video_conversion::VideoFormat;
+use serde::Deserialize;
 
 /// A single typed transformation applied inside the filter graph (or,
 /// for the timeline operations [`TransformOperation::Trim`],

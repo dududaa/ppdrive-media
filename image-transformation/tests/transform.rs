@@ -1,5 +1,5 @@
-use ppff_image_conversion::{Frame, ImageFormat};
 use image_transformation::{Error, ImageTransformer, TransformOperation, TransformOptions};
+use ppff_image_conversion::{Frame, ImageFormat};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(

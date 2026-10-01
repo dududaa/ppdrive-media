@@ -1,4 +1,6 @@
-use ppff_video_conversion::{ConversionOptions, StreamEvent, VideoConverter, VideoFormat, VideoStream};
+use ppff_video_conversion::{
+    ConversionOptions, StreamEvent, VideoConverter, VideoFormat, VideoStream,
+};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(

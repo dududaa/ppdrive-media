@@ -1,5 +1,5 @@
-use ppff_audio_conversion::{AudioFormat, DecodedAudio, Error};
 use audio_effects::{AudioEffects, EffectOperation, EffectOptions};
+use ppff_audio_conversion::{AudioFormat, DecodedAudio, Error};
 
 fn synthetic_wav(sample_rate: u32, channels: u16, seconds: f64) -> Vec<u8> {
     let samples = (f64::from(sample_rate) * seconds) as usize;

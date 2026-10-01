@@ -283,9 +283,11 @@ fn buffer_audio(
         )
         .map_err(crate::ffi::from_audio)?;
     let params = params.ok_or(StreamError::InvalidInput)?;
-    let bitrate =
-        ppff_audio_conversion::bitrate_for_quality(ppff_audio_conversion::AudioFormat::Aac, options.quality)
-            .unwrap_or(128_000);
+    let bitrate = ppff_audio_conversion::bitrate_for_quality(
+        ppff_audio_conversion::AudioFormat::Aac,
+        options.quality,
+    )
+    .unwrap_or(128_000);
     Ok(BufferedAudio {
         params,
         packets,
