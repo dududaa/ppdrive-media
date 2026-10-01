@@ -4,7 +4,7 @@
 //! Rust orchestrates and validates; FFmpeg performs all sample work in
 //! a single `abuffer → filter chain → abuffersink` graph pass.
 //! Decoding and encoding are reused from the `audio-conversion` crate
-//! via its [`audio_conversion::DecodedAudio`] bridge.
+//! via its [`ppff_audio_conversion::DecodedAudio`] bridge.
 //!
 //! ```no_run
 //! use audio_effects::{AudioEffects, EffectOperation, EffectOptions};
@@ -27,7 +27,7 @@ mod audio;
 mod ffi;
 
 pub use audio::{AudioEffects, EffectOperation, EffectOptions};
-pub use audio_conversion::{AudioFormat, Error};
+pub use ppff_audio_conversion::{AudioFormat, Error};
 
 use ppdrive::plugin::loader::DispatchResponse;
 use serde_json::Value;

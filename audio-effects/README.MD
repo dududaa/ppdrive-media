@@ -5,7 +5,7 @@ native execution engine**. Rust orchestrates and validates; FFmpeg
 performs all sample work in a single
 `abuffer → filter chain → abuffersink` graph pass, linked against
 dynamically shared `libavfilter`/`libavutil` (decoding and encoding are
-reused from `ppdrive-audio-conversion`).
+reused from `ppff-audio-conversion`).
 
 - **Input:** anything FFmpeg can probe with an audio stream — WAV, MP3,
   FLAC, AAC, Ogg, Opus, M4A, AIFF, …
@@ -37,7 +37,7 @@ src/
   - Debian/Ubuntu: `sudo apt install libavcodec-dev libavformat-dev
     libavutil-dev libswresample-dev libavfilter-dev pkg-config`
 - Output formats other than WAV need the matching encoders
-  (`libmp3lame`, `libvorbis`, `libopus` — see `ppdrive-audio-conversion`)
+  (`libmp3lame`, `libvorbis`, `libopus` — see `ppff-audio-conversion`)
 - Verified against FFmpeg **6.1** (system); expected to work on 6.x–9.x
 
 ## Build & test
@@ -138,7 +138,7 @@ cargo run --example apply -- tone.wav intro.mp3 \
 
 Segment packaging (HLS/DASH) is **not implemented here**; this crate is
 the processing stage a future `media-streaming` crate would run before
-packaging. The extension points live in `ppdrive-audio-conversion`:
+packaging. The extension points live in `ppff-audio-conversion`:
 
 - `DecodedAudio::encode_to(...)` streams `EncoderParams` + packets to a
   caller sink for custom muxing;

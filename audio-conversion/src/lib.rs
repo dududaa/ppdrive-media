@@ -6,7 +6,7 @@
 //! `libavformat`, `libavutil` and `libswresample`.
 //!
 //! ```no_run
-//! use audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
+//! use ppff_audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
 //!
 //! # let input_bytes: Vec<u8> = Vec::new();
 //! let converter = AudioConverter::new()?;
@@ -19,7 +19,7 @@
 //!         channels: Some(2),
 //!     },
 //! )?;
-//! # Ok::<(), audio_conversion::Error>(())
+//! # Ok::<(), ppff_audio_conversion::Error>(())
 //! ```
 
 mod audio;

@@ -1,4 +1,4 @@
-# ppdrive-video-conversion
+# ppff-video-conversion
 
 Rust video conversion library that uses **FFmpeg as the native execution
 engine**. Rust orchestrates; FFmpeg does all demuxing, decoding, scaling,
@@ -73,7 +73,7 @@ cargo test
 ## Library usage
 
 ```rust
-use video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
+use ppff_video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
 
 let converter = VideoConverter::new()?;
 let output = converter.convert(
@@ -252,9 +252,9 @@ cargo fuzz run fuzz_transcode        # smoke run: -- -max_total_time=60
 | `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
 
 Each release asset is the plugin cdylib itself (no archive), renamed to
-`ppdrive-video-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
+`ppff-video-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
 naming), for example
-`ppdrive-video-conversion-linux-x86_64.so`. FFmpeg shared libraries are
+`ppff-video-conversion-linux-x86_64.so`. FFmpeg shared libraries are
 **not** bundled (licensing) — the target machine needs its own FFmpeg
 installation at runtime.
 

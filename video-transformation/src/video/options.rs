@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use video_conversion::VideoFormat;
+use ppff_video_conversion::VideoFormat;
 
 /// A single typed transformation applied inside the filter graph (or,
 /// for the timeline operations [`TransformOperation::Trim`],
@@ -12,7 +12,7 @@ use video_conversion::VideoFormat;
 /// 720}}` or the bare string `"reverse"`.
 ///
 /// Invalid arguments are rejected with
-/// [`video_conversion::Error::InvalidInput`] before the filter graph
+/// [`ppff_video_conversion::Error::InvalidInput`] before the filter graph
 /// is built: crop rectangles must lie inside the source frame, rotate
 /// only accepts 90/180/270, scale dimensions must be non-zero, speed
 /// must be a finite positive factor and all floating-point parameters
@@ -82,7 +82,7 @@ pub enum TransformOperation {
     /// requests whose estimated frame buffering
     /// (`width × height × fps × duration × 2` bytes) exceeds **1 GiB**
     /// — or whose duration cannot be determined — are rejected with
-    /// [`video_conversion::Error::LimitExceeded`].
+    /// [`ppff_video_conversion::Error::LimitExceeded`].
     #[serde(rename = "reverse")]
     Reverse,
 }
@@ -106,7 +106,7 @@ pub enum TransformOperation {
 ///
 /// - **`quality`** — encoder quality `0..=100` (clamped to 100
 ///   internally). Default `None` = `80`. Semantics per format are
-///   documented on [`video_conversion::ConversionOptions`].
+///   documented on [`ppff_video_conversion::ConversionOptions`].
 #[derive(Debug, Clone, PartialEq, Deserialize, Default)]
 pub struct TransformOptions {
     /// Typed operations, applied in order. `#[serde(default)]`.

@@ -6,7 +6,7 @@
 //! `libavcodec`, `libavformat`, `libavutil` and `libswscale`.
 //!
 //! ```no_run
-//! use video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
+//! use ppff_video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
 //!
 //! # let input_bytes: Vec<u8> = Vec::new();
 //! let converter = VideoConverter::new()?;
@@ -20,7 +20,7 @@
 //!         ..ConversionOptions::default()
 //!     },
 //! )?;
-//! # Ok::<(), video_conversion::Error>(())
+//! # Ok::<(), ppff_video_conversion::Error>(())
 //! ```
 
 mod error;

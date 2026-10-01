@@ -12,7 +12,7 @@
 //! written into, because one call produces many files (playlists plus
 //! segments).
 
-use media_streaming::{MediaStreamer, StreamingOptions};
+use ppff_media_streaming::{MediaStreamer, StreamingOptions};
 use ppdrive::plugin::loader::DispatchResponse;
 use serde_json::Value;
 use std::ffi::c_void;
@@ -86,7 +86,7 @@ mod tests {
         fn new(tag: &str) -> TempDir {
             static COUNTER: AtomicUsize = AtomicUsize::new(0);
             let path = std::env::temp_dir().join(format!(
-                "ppdrive-media-streaming-plugin-{tag}-{}-{}",
+                "ppdrive-media-streaming-{tag}-{}-{}",
                 std::process::id(),
                 COUNTER.fetch_add(1, Ordering::Relaxed)
             ));

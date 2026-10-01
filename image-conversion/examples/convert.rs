@@ -1,4 +1,4 @@
-use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
+use ppff_image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 use std::process::ExitCode;
 
 const USAGE: &str = "\

@@ -1,7 +1,7 @@
 use super::filters;
 use super::options::TransformOptions;
 use crate::ffi::{FilterGraph, avfilter_get_by_name};
-use image_conversion::{Error, Frame, ImageFormat};
+use ppff_image_conversion::{Error, Frame, ImageFormat};
 
 /// FFmpeg-backed image transformer.
 ///
@@ -13,7 +13,7 @@ use image_conversion::{Error, Frame, ImageFormat};
 ///
 /// ```no_run
 /// use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};
-/// use image_conversion::ImageFormat;
+/// use ppff_image_conversion::ImageFormat;
 ///
 /// # let input_bytes: Vec<u8> = Vec::new();
 /// let transformer = ImageTransformer::new()?;
@@ -30,7 +30,7 @@ use image_conversion::{Error, Frame, ImageFormat};
 ///         quality: Some(80),
 ///     },
 /// )?;
-/// # Ok::<(), image_conversion::Error>(())
+/// # Ok::<(), ppff_image_conversion::Error>(())
 /// ```
 pub struct ImageTransformer;
 

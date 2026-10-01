@@ -6,7 +6,7 @@
 //! another plugin cdylib must not define `plugin_dispatch`, or the
 //! symbol collides at link time with the other crate's own entry point.
 
-use audio_conversion::{AudioConverter, ConversionOptions};
+use ppff_audio_conversion::{AudioConverter, ConversionOptions};
 use ppdrive::plugin::loader::DispatchResponse;
 use serde_json::Value;
 use std::ffi::c_void;

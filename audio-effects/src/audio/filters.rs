@@ -1,5 +1,5 @@
 use super::options::EffectOperation;
-use audio_conversion::Error;
+use ppff_audio_conversion::Error;
 
 const MAX_ATTEMPO_STAGES: usize = 16;
 

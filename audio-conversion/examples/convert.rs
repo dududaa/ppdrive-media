@@ -1,4 +1,4 @@
-use audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
+use ppff_audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
 use std::process::ExitCode;
 
 const USAGE: &str = "\

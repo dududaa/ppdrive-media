@@ -15,10 +15,10 @@ members = [
 ]
 
 [workspace.dependencies]
-audio-conversion = { path = "audio-conversion", version = "0.1.0", package = "ppdrive-audio-conversion" }
-image-conversion = { path = "image-conversion", package = "ppdrive-image-conversion" }
-media-streaming = { path = "media-streaming", package = "ppdrive-media-streaming" }
+ppff-audio-conversion = { path = "audio-conversion", version = "0.1.0", package = "ppff-audio-conversion" }
+ppff-image-conversion = { path = "image-conversion", package = "ppff-image-conversion" }
+ppff-media-streaming = { path = "media-streaming", package = "ppff-media-streaming" }
 ppdrive = "0.2.0"
 serde = "1.0.229"
 serde_json = "1.0.151"
-video-conversion = { path = "video-conversion", version = "0.1.0", package = "ppdrive-video-conversion" }
+ppff-video-conversion = { path = "video-conversion", version = "0.1.0", package = "ppff-video-conversion" }

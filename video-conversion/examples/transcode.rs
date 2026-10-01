@@ -1,5 +1,5 @@
 use std::process::ExitCode;
-use video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
+use ppff_video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
 
 const USAGE: &str = "\
 Usage: transcode <input> <output> [options]

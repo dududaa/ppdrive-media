@@ -1201,18 +1201,8 @@ dependencies = [
 name = "ppdrive-audio-conversion"
 version = "0.1.0"
 dependencies = [
- "bindgen",
- "pkg-config",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "ppdrive-audio-conversion-plugin"
-version = "0.1.0"
-dependencies = [
  "ppdrive",
- "ppdrive-audio-conversion",
+ "ppff-audio-conversion",
  "serde_json",
 ]
 
@@ -1223,7 +1213,7 @@ dependencies = [
  "bindgen",
  "pkg-config",
  "ppdrive",
- "ppdrive-audio-conversion",
+ "ppff-audio-conversion",
  "serde",
  "serde_json",
 ]
@@ -1232,18 +1222,8 @@ dependencies = [
 name = "ppdrive-image-conversion"
 version = "0.1.0"
 dependencies = [
- "bindgen",
- "pkg-config",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "ppdrive-image-conversion-plugin"
-version = "0.1.0"
-dependencies = [
  "ppdrive",
- "ppdrive-image-conversion",
+ "ppff-image-conversion",
  "serde_json",
 ]
 
@@ -1254,7 +1234,7 @@ dependencies = [
  "bindgen",
  "pkg-config",
  "ppdrive",
- "ppdrive-image-conversion",
+ "ppff-image-conversion",
  "serde",
  "serde_json",
 ]
@@ -1263,20 +1243,8 @@ dependencies = [
 name = "ppdrive-media-streaming"
 version = "0.1.0"
 dependencies = [
- "bindgen",
- "pkg-config",
- "ppdrive-audio-conversion",
- "ppdrive-video-conversion",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "ppdrive-media-streaming-plugin"
-version = "0.1.0"
-dependencies = [
  "ppdrive",
- "ppdrive-media-streaming",
+ "ppff-media-streaming",
  "serde_json",
 ]
 
@@ -1284,18 +1252,8 @@ dependencies = [
 name = "ppdrive-video-conversion"
 version = "0.1.0"
 dependencies = [
- "bindgen",
- "pkg-config",
- "serde",
- "serde_json",
-]
-
-[[package]]
-name = "ppdrive-video-conversion-plugin"
-version = "0.1.0"
-dependencies = [
  "ppdrive",
- "ppdrive-video-conversion",
+ "ppff-video-conversion",
  "serde_json",
 ]
 
@@ -1306,7 +1264,49 @@ dependencies = [
  "bindgen",
  "pkg-config",
  "ppdrive",
- "ppdrive-video-conversion",
+ "ppff-video-conversion",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ppff-audio-conversion"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ppff-image-conversion"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ppff-media-streaming"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
+ "ppff-audio-conversion",
+ "ppff-video-conversion",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "ppff-video-conversion"
+version = "0.1.0"
+dependencies = [
+ "bindgen",
+ "pkg-config",
  "serde",
  "serde_json",
 ]
@@ -2397,9 +2397,9 @@ checksum = "3ad82d2a33cdc9674dc7465672f271e096168fcdbe0f799d9e6db8c5892679dc"
 
 [[package]]
 name = "xxhash-rust"
-version = "0.8.18"
+version = "0.8.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aee1b19627c7c60102ab80d3a9cbe18de90bfe03bfa6c3715447681f0e8c8af6"
+checksum = "550a2b930b62486a393c52d5c3b84bff264b28aa437ed64694d31e93b1757af7"
 
 [[package]]
 name = "yoke"
@@ -2414,9 +2414,9 @@ dependencies = [
 
 [[package]]
 name = "yoke-derive"
-version = "0.8.3"
+version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33811428bee40dbceb6d545e95754741d17a6aef9a4849f0fd62e2ba4f412a78"
+checksum = "ec8ebde2db3681e8c9980cc27822030e68752690ddfa9473e739aeb4dbde6d71"
 dependencies = [
  "proc-macro2",
  "quote",

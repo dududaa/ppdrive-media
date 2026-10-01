@@ -1,8 +1,8 @@
 use std::path::Path;
 use std::ptr;
 
-use audio_conversion::{EncodedPacket, EncoderParams};
-use video_conversion::{VideoEncoderParams, VideoPacket};
+use ppff_audio_conversion::{EncodedPacket, EncoderParams};
+use ppff_video_conversion::{VideoEncoderParams, VideoPacket};
 
 use crate::error::Error;
 use crate::ffi;

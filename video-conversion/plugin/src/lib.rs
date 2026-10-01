@@ -10,7 +10,7 @@ use ppdrive::plugin::loader::DispatchResponse;
 use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;
-use video_conversion::{ConversionOptions, VideoConverter};
+use ppff_video_conversion::{ConversionOptions, VideoConverter};
 
 /// ppdrive plugin entry point: demuxes, decodes and converts a video.
 ///

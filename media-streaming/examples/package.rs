@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::process::ExitCode;
 
-use media_streaming::{MediaStreamer, RenditionSpec, StreamingOptions, StreamingProtocol};
+use ppff_media_streaming::{MediaStreamer, RenditionSpec, StreamingOptions, StreamingProtocol};
 
 const USAGE: &str = "\
 Usage: package <input> <output_dir> [options]

@@ -1,4 +1,4 @@
-use video_conversion::VideoStream;
+use ppff_video_conversion::VideoStream;
 use video_transformation::{
     Error, TransformOperation, TransformOptions, VideoFormat, VideoTransformer,
 };
@@ -151,7 +151,7 @@ fn reverse_keeps_duration_drops_audio_and_stays_decodable() {
     let mut stream = VideoStream::open(&output).unwrap();
     let mut frames = 0usize;
     while let Some(event) = stream.next_event().unwrap() {
-        if matches!(event, video_conversion::StreamEvent::Video(_)) {
+        if matches!(event, ppff_video_conversion::StreamEvent::Video(_)) {
             frames += 1;
         }
     }

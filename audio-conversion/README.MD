@@ -1,4 +1,4 @@
-# ppdrive-audio-conversion
+# ppff-audio-conversion
 
 Rust audio transcoding library that uses **FFmpeg as the native execution
 engine**. Rust orchestrates; FFmpeg does all decoding, resampling and
@@ -66,7 +66,7 @@ cargo test
 ## Library usage
 
 ```rust
-use audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
+use ppff_audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
 
 let converter = AudioConverter::new()?;
 let output = converter.convert(
@@ -225,8 +225,8 @@ format/quality/options and expects no panics, aborts or leaks.
 | `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
 
 Each release asset is the plugin cdylib itself (no archive), renamed to
-`ppdrive-audio-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
-naming), for example `ppdrive-audio-conversion-linux-x86_64.so`. FFmpeg
+`ppff-audio-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
+naming), for example `ppff-audio-conversion-linux-x86_64.so`. FFmpeg
 shared libraries are **not** bundled (licensing) — the target machine
 needs its own FFmpeg installation at runtime.
 

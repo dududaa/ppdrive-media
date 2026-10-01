@@ -6,7 +6,7 @@
 //! `libavutil` and `libswscale`.
 //!
 //! ```no_run
-//! use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
+//! use ppff_image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 //!
 //! # let input_bytes: Vec<u8> = Vec::new();
 //! let converter = ImageConverter::new()?;
@@ -20,7 +20,7 @@
 //!         ..Default::default()
 //!     },
 //! )?;
-//! # Ok::<(), image_conversion::Error>(())
+//! # Ok::<(), ppff_image_conversion::Error>(())
 //! ```
 
 mod error;

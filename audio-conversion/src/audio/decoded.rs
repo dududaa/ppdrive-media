@@ -53,13 +53,13 @@ pub struct AudioStreamParams {
 /// # Example
 ///
 /// ```no_run
-/// use audio_conversion::{AudioFormat, DecodedAudio};
+/// use ppff_audio_conversion::{AudioFormat, DecodedAudio};
 ///
 /// # let bytes: Vec<u8> = Vec::new();
 /// let decoded = DecodedAudio::decode(&bytes)?;
 /// println!("{} Hz, {} ch, {:.2}s", decoded.sample_rate(), decoded.channels(), decoded.duration_secs());
 /// let mp3 = decoded.encode(AudioFormat::Mp3, 85)?;
-/// # Ok::<(), audio_conversion::Error>(())
+/// # Ok::<(), ppff_audio_conversion::Error>(())
 /// ```
 #[derive(Debug)]
 pub struct DecodedAudio {

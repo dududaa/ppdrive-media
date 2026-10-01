@@ -4,7 +4,7 @@ Rust image transformation library that uses **FFmpeg's libavfilter as
 the native execution engine**. Rust validates and orchestrates; FFmpeg
 performs all pixel work in a single `buffer → filter chain → buffersink`
 graph pass. Decoding and encoding are reused from the
-`ppdrive-image-conversion` crate via its public `Frame` bridge — no
+`ppff-image-conversion` crate via its public `Frame` bridge — no
 codec/AVIO code is duplicated here.
 
 - **Operations:** crop, rotate (90/180/270), flip, pad, grayscale,
@@ -29,14 +29,14 @@ src/
 
 `build.rs` discovers libavfilter/libavutil via `pkg-config` (honours
 `PKG_CONFIG_PATH`) with the same proven bindgen settings as
-`ppdrive-image-conversion`.
+`ppff-image-conversion`.
 
 ### Pipeline
 
 ```
-input bytes → image_conversion::Frame::decode
+input bytes → ppff_image_conversion::Frame::decode
            → buffer src → <filter chain> → buffersink   (libavfilter)
-           → image_conversion::Frame::encode            (even-dim fix inside)
+           → ppff_image_conversion::Frame::encode            (even-dim fix inside)
            → output bytes
 ```
 
@@ -83,7 +83,7 @@ cargo test
 
 ```rust
 use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};
-use image_conversion::ImageFormat;
+use ppff_image_conversion::ImageFormat;
 
 let transformer = ImageTransformer::new()?;
 let output = transformer.transform(
@@ -181,7 +181,7 @@ cargo run --example transform -- photo.png thumb.jpg \
 ## ppdrive plugin
 
 `plugin_dispatch` is exported with the same contract as
-`ppdrive-image-conversion`: the loader passes a boxed
+`ppff-image-conversion`: the loader passes a boxed
 `(&[u8], &serde_json::Value)`; the JSON deserializes into
 `TransformOptions` (snake_case op tags, e.g.
 `{"operations":[{"crop":{"x":0,"y":0,"width":800,"height":600}},"grayscale"]}`).

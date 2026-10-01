@@ -1,5 +1,5 @@
 [package]
-name = "ppdrive-image-conversion"
+name = "ppff-image-conversion"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.94"
@@ -18,5 +18,5 @@ bindgen = "0.73"
 pkg-config = "0.3"
 
 [lib]
-name = "image_conversion"
+name = "ppff_image_conversion"
 crate-type = ["lib"]

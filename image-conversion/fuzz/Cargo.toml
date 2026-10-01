@@ -1,5 +1,5 @@
 [package]
-name = "ppdrive-image-conversion-fuzz"
+name = "ppff-image-conversion-fuzz"
 version = "0.0.0"
 publish = false
 edition = "2024"
@@ -9,7 +9,7 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
-ppdrive-image-conversion = { path = ".." }
+ppff-image-conversion = { path = ".." }
 
 [[bin]]
 name = "fuzz_decode"

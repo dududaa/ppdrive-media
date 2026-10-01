@@ -1,17 +1,17 @@
 [package]
-name = "ppdrive-video-conversion-plugin"
+name = "ppdrive-video-conversion"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.94"
-description = "ppdrive plugin cdylib entry point for ppdrive-video-conversion"
+description = "ppdrive plugin cdylib entry point for ppff-video-conversion"
 license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
 ppdrive.workspace = true
 serde_json.workspace = true
-video-conversion.workspace = true
+ppff-video-conversion.workspace = true
 
 [lib]
-name = "video_conversion_plugin"
+name = "video_conversion"
 crate-type = ["cdylib"]

@@ -15,13 +15,13 @@ use crate::image::{decode, encode};
 /// # Example
 ///
 /// ```no_run
-/// use image_conversion::{Frame, ImageFormat};
+/// use ppff_image_conversion::{Frame, ImageFormat};
 ///
 /// # let bytes: Vec<u8> = Vec::new();
 /// let frame = Frame::decode(&bytes)?;
 /// println!("{}x{} alpha={}", frame.width(), frame.height(), frame.has_alpha());
 /// let jpeg = frame.encode(ImageFormat::Jpeg, 85)?;
-/// # Ok::<(), image_conversion::Error>(())
+/// # Ok::<(), ppff_image_conversion::Error>(())
 /// ```
 pub struct Frame {
     inner: ffi::wrappers::Frame,

@@ -1,4 +1,4 @@
-use video_conversion::{ConversionOptions, StreamEvent, VideoConverter, VideoFormat, VideoStream};
+use ppff_video_conversion::{ConversionOptions, StreamEvent, VideoConverter, VideoFormat, VideoStream};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(
@@ -15,7 +15,7 @@ fn convert(
     quality: u8,
     width: Option<u32>,
     height: Option<u32>,
-) -> Result<Vec<u8>, video_conversion::Error> {
+) -> Result<Vec<u8>, ppff_video_conversion::Error> {
     let converter = VideoConverter::new()?;
     converter.convert(
         input,
@@ -144,11 +144,11 @@ fn extension_mapping_covers_plain_containers() {
 #[test]
 fn garbage_input_is_invalid() {
     let err = convert(b"not a video", VideoFormat::Mp4, 80, None, None).unwrap_err();
-    assert_eq!(err, video_conversion::Error::InvalidInput);
+    assert_eq!(err, ppff_video_conversion::Error::InvalidInput);
 }
 
 #[test]
 fn empty_input_is_invalid() {
     let err = convert(b"", VideoFormat::Mp4, 80, None, None).unwrap_err();
-    assert_eq!(err, video_conversion::Error::InvalidInput);
+    assert_eq!(err, ppff_video_conversion::Error::InvalidInput);
 }

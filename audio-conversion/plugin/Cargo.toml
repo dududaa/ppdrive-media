@@ -1,17 +1,17 @@
 [package]
-name = "ppdrive-audio-conversion-plugin"
+name = "ppdrive-audio-conversion"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.94"
-description = "ppdrive plugin cdylib entry point for ppdrive-audio-conversion"
+description = "ppdrive plugin cdylib entry point for ppff-audio-conversion"
 license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-audio-conversion.workspace = true
+ppff-audio-conversion.workspace = true
 ppdrive.workspace = true
 serde_json.workspace = true
 
 [lib]
-name = "audio_conversion_plugin"
+name = "audio_conversion"
 crate-type = ["cdylib"]

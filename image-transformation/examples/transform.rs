@@ -1,4 +1,4 @@
-use image_conversion::ImageFormat;
+use ppff_image_conversion::ImageFormat;
 use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};
 use std::process::ExitCode;
 

@@ -4,11 +4,11 @@
 //! Rust orchestrates and validates; FFmpeg performs all pixel work in
 //! a single `buffer → filter chain → buffersink` graph pass. Decoding
 //! and encoding are reused from the `image-conversion` crate via its
-//! public `image_conversion::Frame` bridge.
+//! public `ppff_image_conversion::Frame` bridge.
 //!
 //! ```no_run
 //! use image_transformation::{ImageTransformer, TransformOperation, TransformOptions};
-//! use image_conversion::ImageFormat;
+//! use ppff_image_conversion::ImageFormat;
 //!
 //! # let input_bytes: Vec<u8> = Vec::new();
 //! let transformer = ImageTransformer::new()?;
@@ -21,14 +21,14 @@
 //!         quality: None,
 //!     },
 //! )?;
-//! # Ok::<(), image_conversion::Error>(())
+//! # Ok::<(), ppff_image_conversion::Error>(())
 //! ```
 
 mod ffi;
 mod image;
 
 pub use image::{ImageTransformer, TransformOperation, TransformOptions};
-pub use image_conversion::{Error, ImageFormat};
+pub use ppff_image_conversion::{Error, ImageFormat};
 use ppdrive::plugin::loader::DispatchResponse;
 use serde_json::Value;
 use std::ffi::c_void;

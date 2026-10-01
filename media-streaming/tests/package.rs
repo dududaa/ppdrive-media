@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicUsize, Ordering};
 
-use media_streaming::{MediaStreamer, RenditionSpec, StreamingOptions, StreamingProtocol};
+use ppff_media_streaming::{MediaStreamer, RenditionSpec, StreamingOptions, StreamingProtocol};
 
 /// Unique temp directory that cleans itself up on drop.
 struct TempDir(PathBuf);
@@ -10,7 +10,7 @@ impl TempDir {
     fn new(tag: &str) -> TempDir {
         static COUNTER: AtomicUsize = AtomicUsize::new(0);
         let path = std::env::temp_dir().join(format!(
-            "ppdrive-media-streaming-{tag}-{}-{}",
+            "ppff-media-streaming-{tag}-{}-{}",
             std::process::id(),
             COUNTER.fetch_add(1, Ordering::Relaxed)
         ));

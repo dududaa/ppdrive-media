@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
+use ppff_audio_conversion::{AudioConverter, AudioFormat, ConversionOptions};
 
 fuzz_target!(|data: &[u8]| {
     let Some((&selector, payload)) = data.split_first() else {

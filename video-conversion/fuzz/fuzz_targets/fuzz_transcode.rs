@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
+use ppff_video_conversion::{ConversionOptions, VideoConverter, VideoFormat};
 
 fuzz_target!(|data: &[u8]| {
     let Some((&selector, payload)) = data.split_first() else {

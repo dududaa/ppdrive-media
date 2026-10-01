@@ -1,5 +1,5 @@
 use super::options::TransformOperation;
-use image_conversion::Error;
+use ppff_image_conversion::Error;
 
 /// Builds the libavfilter chain for one call: typed operations in
 /// order, then the optional custom filter string.

@@ -1,5 +1,5 @@
 use crate::video::options::TransformOperation;
-use video_conversion::{Error, VideoStreamInfo};
+use ppff_video_conversion::{Error, VideoStreamInfo};
 
 /// Selected source-time window from the [`TransformOperation::Trim`]
 /// operations, in seconds (`end == None` runs through the end of the

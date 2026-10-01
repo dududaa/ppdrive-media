@@ -1,4 +1,4 @@
-# ppdrive-media-streaming
+# ppff-media-streaming
 
 Rust adaptive-streaming library that packages media into **HLS** and
 **MPEG-DASH** VOD streams with **FFmpeg as the native execution
@@ -77,7 +77,7 @@ cargo test
 ## Library usage
 
 ```rust
-use media_streaming::{MediaStreamer, StreamingOptions, StreamingProtocol};
+use ppff_media_streaming::{MediaStreamer, StreamingOptions, StreamingProtocol};
 
 let streamer = MediaStreamer::new()?;
 let output = streamer.stream_file(
@@ -131,7 +131,7 @@ land on segment boundaries; the HLS muxer additionally signals
 
 ## Errors
 
-`media_streaming::Error` mirrors the sibling crates:
+`ppff_media_streaming::Error` mirrors the sibling crates:
 
 - `FfmpegError(String)` — an FFmpeg call failed (`av_strerror` text)
 - `InvalidInput` — empty input, bad options, unusable paths
@@ -184,7 +184,7 @@ request, covering this crate through the workspace:
 
 ## Plugin
 
-`media-streaming/plugin` (`ppdrive-media-streaming-plugin`) is the
+`media-streaming/plugin` (`ppff-media-streaming-plugin`) is the
 ppdrive cdylib entry point. It mirrors the other plugins' C ABI —
 `plugin_dispatch(args: *mut c_void) -> *mut DispatchResponse` — but
 is **file-based** instead of byte-based, because one call produces
@@ -210,7 +210,7 @@ many files:
 | `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
 
 Each release asset is the plugin cdylib itself (no archive), renamed to
-`ppdrive-media-streaming-<os>-<arch>.<ext>` (ppdrive's plugin library
+`ppff-media-streaming-<os>-<arch>.<ext>` (ppdrive's plugin library
 naming). FFmpeg shared libraries are **not** bundled (licensing) —
 the target machine needs its own FFmpeg installation at runtime.
 

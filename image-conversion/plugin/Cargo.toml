@@ -1,17 +1,17 @@
 [package]
-name = "ppdrive-image-conversion-plugin"
+name = "ppdrive-image-conversion"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.94"
-description = "ppdrive plugin cdylib entry point for ppdrive-image-conversion"
+description = "ppdrive plugin cdylib entry point for ppff-image-conversion"
 license = "MIT OR Apache-2.0"
 publish = false
 
 [dependencies]
-image-conversion.workspace = true
+ppff-image-conversion.workspace = true
 ppdrive.workspace = true
 serde_json.workspace = true
 
 [lib]
-name = "image_conversion_plugin"
+name = "image_conversion"
 crate-type = ["cdylib"]

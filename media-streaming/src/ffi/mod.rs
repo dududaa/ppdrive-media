@@ -32,8 +32,8 @@ pub fn to_cstr(s: &str) -> Result<CString, Error> {
 }
 
 /// Maps video-conversion errors onto this crate's error type.
-pub(crate) fn from_video(err: video_conversion::Error) -> Error {
-    use video_conversion::Error as V;
+pub(crate) fn from_video(err: ppff_video_conversion::Error) -> Error {
+    use ppff_video_conversion::Error as V;
     match err {
         V::FfmpegError(msg) => Error::FfmpegError(msg),
         V::EncoderNotFound => Error::EncoderNotFound,
@@ -45,8 +45,8 @@ pub(crate) fn from_video(err: video_conversion::Error) -> Error {
 }
 
 /// Maps audio-conversion errors onto this crate's error type.
-pub(crate) fn from_audio(err: audio_conversion::Error) -> Error {
-    use audio_conversion::Error as A;
+pub(crate) fn from_audio(err: ppff_audio_conversion::Error) -> Error {
+    use ppff_audio_conversion::Error as A;
     match err {
         A::FfmpegError(msg) => Error::FfmpegError(msg),
         A::EncoderNotFound => Error::EncoderNotFound,

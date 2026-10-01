@@ -17,7 +17,7 @@ pub use bindings::*;
 
 use std::ffi::CStr;
 use std::os::raw::{c_char, c_int};
-use video_conversion::Error;
+use ppff_video_conversion::Error;
 
 /// `AVERROR_EOF` — tag `"EOF "` inverted (see FFmpeg's `FFERRTAG`).
 const AVERROR_EOF_CODE: c_int = -0x20464f45;

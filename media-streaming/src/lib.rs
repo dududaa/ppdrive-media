@@ -10,8 +10,8 @@ pub use options::{RenditionSpec, StreamingOptions, StreamingProtocol};
 
 use std::path::{Path, PathBuf};
 
-use audio_conversion::{DecodedAudio, EncodedPacket, EncoderParams};
-use video_conversion::{StreamEvent, VideoEncoder, VideoFormat, VideoStream, VideoStreamInfo};
+use ppff_audio_conversion::{DecodedAudio, EncodedPacket, EncoderParams};
+use ppff_video_conversion::{StreamEvent, VideoEncoder, VideoFormat, VideoStream, VideoStreamInfo};
 
 use crate::error::Error as StreamError;
 
@@ -29,7 +29,7 @@ pub struct StreamingOutput {
 /// Packages media into HLS or DASH renditions.
 ///
 /// ```no_run
-/// use media_streaming::{MediaStreamer, StreamingOptions, StreamingProtocol};
+/// use ppff_media_streaming::{MediaStreamer, StreamingOptions, StreamingProtocol};
 ///
 /// # let input: Vec<u8> = Vec::new();
 /// let streamer = MediaStreamer::new()?;
@@ -39,7 +39,7 @@ pub struct StreamingOutput {
 ///     &StreamingOptions::default(),
 /// )?;
 /// assert!(output.playlist.ends_with("master.m3u8"));
-/// # Ok::<(), media_streaming::Error>(())
+/// # Ok::<(), ppff_media_streaming::Error>(())
 /// ```
 pub struct MediaStreamer;
 
@@ -94,7 +94,7 @@ impl MediaStreamer {
 
         match VideoStream::open(input) {
             Ok(stream) => package_video(input, stream, &playlist, output_dir, options),
-            Err(video_conversion::Error::UnsupportedFormat) => {
+            Err(ppff_video_conversion::Error::UnsupportedFormat) => {
                 package_audio(input, &playlist, output_dir, options)
             }
             Err(err) => Err(crate::ffi::from_video(err)),
@@ -169,7 +169,7 @@ fn package_video(
                 global_headers,
             )
         })
-        .collect::<Result<_, video_conversion::Error>>()
+        .collect::<Result<_, ppff_video_conversion::Error>>()
         .map_err(crate::ffi::from_video)?;
 
     let audio = if info.has_audio {
@@ -271,7 +271,7 @@ fn buffer_audio(
     let mut packets = Vec::new();
     decoded
         .encode_to(
-            audio_conversion::AudioFormat::Aac,
+            ppff_audio_conversion::AudioFormat::Aac,
             options.quality,
             global_headers,
             &mut |packet_params, packet| {
@@ -284,7 +284,7 @@ fn buffer_audio(
         .map_err(crate::ffi::from_audio)?;
     let params = params.ok_or(StreamError::InvalidInput)?;
     let bitrate =
-        audio_conversion::bitrate_for_quality(audio_conversion::AudioFormat::Aac, options.quality)
+        ppff_audio_conversion::bitrate_for_quality(ppff_audio_conversion::AudioFormat::Aac, options.quality)
             .unwrap_or(128_000);
     Ok(BufferedAudio {
         params,
@@ -297,7 +297,7 @@ fn packet_seconds(packet: &EncodedPacket) -> f64 {
     packet.pts as f64 * f64::from(packet.tb_num) / f64::from(packet.tb_den)
 }
 
-fn packet_seconds_video(packet: &video_conversion::VideoPacket) -> f64 {
+fn packet_seconds_video(packet: &ppff_video_conversion::VideoPacket) -> f64 {
     packet.pts as f64 * f64::from(packet.tb_num) / f64::from(packet.tb_den)
 }
 

@@ -1,4 +1,4 @@
-use audio_conversion::AudioFormat;
+use ppff_audio_conversion::AudioFormat;
 use serde::Deserialize;
 
 /// A single typed effect applied inside the filter graph.
@@ -7,7 +7,7 @@ use serde::Deserialize;
 /// [`EffectOptions::operations`]. Serde uses lowercase snake_case tags,
 /// e.g. `{"volume": {"gain_db": -6.0}}` or `"reverse"`.
 ///
-/// Invalid arguments are rejected with [`audio_conversion::Error::InvalidInput`] before
+/// Invalid arguments are rejected with [`ppff_audio_conversion::Error::InvalidInput`] before
 /// any FFmpeg call: all floating-point parameters must be finite,
 /// `speed.factor` must be `> 0` (and decomposable into at most 16
 /// `atempo` stages), `trim` must select a non-empty window inside the
@@ -70,7 +70,7 @@ pub enum EffectOperation {
 ///
 /// - **`quality`** — encoder quality `0..=100` (clamped to 100
 ///   internally). Default `None` = `80`. Semantics per format are
-///   documented on [`audio_conversion::ConversionOptions`].
+///   documented on [`ppff_audio_conversion::ConversionOptions`].
 #[derive(Debug, Clone, PartialEq, Deserialize, Default)]
 pub struct EffectOptions {
     /// Typed effects, applied in order. `#[serde(default)]`.

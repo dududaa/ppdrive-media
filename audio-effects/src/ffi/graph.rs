@@ -1,5 +1,5 @@
 use super::*;
-use audio_conversion::{AudioStreamParams, Error};
+use ppff_audio_conversion::{AudioStreamParams, Error};
 use std::ffi::{CStr, CString};
 use std::ptr;
 

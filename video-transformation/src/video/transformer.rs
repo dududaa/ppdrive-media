@@ -1,7 +1,7 @@
 use super::filters::{self, ChainPlan};
 use super::options::TransformOptions;
 use crate::ffi::FilterGraph;
-use video_conversion::{
+use ppff_video_conversion::{
     Error, StreamEvent, VideoEncoder, VideoFormat, VideoFrame, VideoStream, VideoStreamInfo,
 };
 
@@ -34,14 +34,14 @@ const MAX_REVERSE_ESTIMATED_BYTES: f64 = 1024.0 * 1024.0 * 1024.0;
 ///         quality: Some(80),
 ///     },
 /// )?;
-/// # Ok::<(), video_conversion::Error>(())
+/// # Ok::<(), ppff_video_conversion::Error>(())
 /// ```
 pub struct VideoTransformer;
 
 impl VideoTransformer {
     /// Verifies that libavfilter exposes the `buffer`/`buffersink`
     /// filters and that both video encoders are present (via
-    /// [`video_conversion::VideoConverter::new`]).
+    /// [`ppff_video_conversion::VideoConverter::new`]).
     pub fn new() -> Result<VideoTransformer, Error> {
         unsafe {
             if crate::ffi::avfilter_get_by_name(c"buffer".as_ptr()).is_null()
@@ -52,7 +52,7 @@ impl VideoTransformer {
                 ));
             }
         }
-        video_conversion::VideoConverter::new()?;
+        ppff_video_conversion::VideoConverter::new()?;
         Ok(VideoTransformer)
     }
 

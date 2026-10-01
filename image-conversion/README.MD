@@ -1,4 +1,4 @@
-# ppdrive-image-conversion
+# ppff-image-conversion
 
 Rust image conversion library that uses **FFmpeg as the native execution
 engine**. Rust orchestrates; FFmpeg does all decoding, resizing, pixel
@@ -64,7 +64,7 @@ cargo test
 ## Library usage
 
 ```rust
-use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
+use ppff_image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 
 let converter = ImageConverter::new()?;
 let output = converter.convert(
@@ -213,9 +213,9 @@ cargo fuzz run fuzz_decode            # smoke run: -- -max_total_time=60
 | `x86_64-pc-windows-gnu` | Windows + MSYS2 | MSYS2 MinGW FFmpeg |
 
 Each release asset is the plugin cdylib itself (no archive), renamed to
-`ppdrive-image-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
+`ppff-image-conversion-<os>-<arch>.<ext>` (ppdrive's plugin library
 naming), for example
-`ppdrive-image-conversion-linux-x86_64.so`. FFmpeg shared libraries are
+`ppff-image-conversion-linux-x86_64.so`. FFmpeg shared libraries are
 **not** bundled (licensing) — the target machine needs its own FFmpeg
 installation at runtime.
 

@@ -1,4 +1,4 @@
-use audio_conversion::AudioFormat;
+use ppff_audio_conversion::AudioFormat;
 use audio_effects::{AudioEffects, EffectOperation, EffectOptions};
 use std::process::ExitCode;
 

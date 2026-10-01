@@ -11,7 +11,7 @@ readme = "README.MD"
 ppdrive.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
-video-conversion.workspace = true
+ppff-video-conversion.workspace = true
 
 [build-dependencies]
 bindgen = "0.73"

@@ -1,4 +1,4 @@
-use audio_conversion::{
+use ppff_audio_conversion::{
     AudioConverter, AudioFormat, ConversionOptions, DecodedAudio, EncodedPacket, EncoderParams,
 };
 
@@ -228,7 +228,7 @@ fn invalid_options_are_rejected() {
     ] {
         assert_eq!(
             converter.convert(&input, bad).unwrap_err(),
-            audio_conversion::Error::InvalidInput
+            ppff_audio_conversion::Error::InvalidInput
         );
     }
 }
@@ -285,7 +285,7 @@ fn encode_to_yields_mpx_packets() {
 
 #[test]
 fn decode_rejects_empty_and_unsupported() {
-    use audio_conversion::Error;
+    use ppff_audio_conversion::Error;
     assert_eq!(DecodedAudio::decode(&[]).unwrap_err(), Error::InvalidInput);
     let png = [
         0x89, b'P', b'N', b'G', 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, b'I', b'H', b'D',

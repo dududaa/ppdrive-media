@@ -1,7 +1,7 @@
 use super::filters;
 use super::options::EffectOptions;
 use crate::ffi::{FilterGraph, avfilter_get_by_name};
-use audio_conversion::{AudioFormat, DecodedAudio, Error};
+use ppff_audio_conversion::{AudioFormat, DecodedAudio, Error};
 use std::ffi::c_void;
 
 /// FFmpeg-backed audio effects runner.
@@ -58,7 +58,7 @@ impl AudioEffects {
     ///
     /// Pipeline: `DecodedAudio::decode` → `abuffer → chain →
     /// abuffersink` → [`DecodedAudio::encode`] (WAV by default; the
-    /// rate/channel rules of [`audio_conversion::ConversionOptions`]
+    /// rate/channel rules of [`ppff_audio_conversion::ConversionOptions`]
     /// apply when another format is requested).
     ///
     /// The output format is `options.format`, defaulting to

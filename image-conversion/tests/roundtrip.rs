@@ -1,4 +1,4 @@
-use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
+use ppff_image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 
 fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(
@@ -15,7 +15,7 @@ fn convert(
     quality: u8,
     width: Option<u32>,
     height: Option<u32>,
-) -> Result<Vec<u8>, image_conversion::Error> {
+) -> Result<Vec<u8>, ppff_image_conversion::Error> {
     let converter = ImageConverter::new()?;
     converter.convert(
         input,
@@ -118,26 +118,26 @@ fn jpeg_quality_controls_output_size() {
 fn avif_input_is_unsupported() {
     let input = fixture("input.avif");
     let err = convert(&input, ImageFormat::Png, 80, None, None).unwrap_err();
-    assert_eq!(err, image_conversion::Error::UnsupportedFormat);
+    assert_eq!(err, ppff_image_conversion::Error::UnsupportedFormat);
 }
 
 #[test]
 fn garbage_input_is_invalid() {
     let err = convert(b"not an image", ImageFormat::Jpeg, 80, None, None).unwrap_err();
-    assert_eq!(err, image_conversion::Error::InvalidInput);
+    assert_eq!(err, ppff_image_conversion::Error::InvalidInput);
 }
 
 #[test]
 fn empty_input_is_invalid() {
     let err = convert(b"", ImageFormat::Jpeg, 80, None, None).unwrap_err();
-    assert_eq!(err, image_conversion::Error::InvalidInput);
+    assert_eq!(err, ppff_image_conversion::Error::InvalidInput);
 }
 
 #[test]
 fn zero_dimensions_are_invalid() {
     let input = fixture("input.png");
     let err = convert(&input, ImageFormat::Jpeg, 80, Some(0), None).unwrap_err();
-    assert_eq!(err, image_conversion::Error::InvalidInput);
+    assert_eq!(err, ppff_image_conversion::Error::InvalidInput);
 }
 
 #[test]

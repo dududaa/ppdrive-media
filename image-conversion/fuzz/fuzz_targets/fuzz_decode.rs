@@ -1,6 +1,6 @@
 #![no_main]
 
-use image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
+use ppff_image_conversion::{ConversionOptions, ImageConverter, ImageFormat};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {

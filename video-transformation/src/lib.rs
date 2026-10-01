@@ -21,7 +21,7 @@
 //!         quality: Some(80),
 //!     },
 //! )?;
-//! # Ok::<(), video_conversion::Error>(())
+//! # Ok::<(), ppff_video_conversion::Error>(())
 //! ```
 
 mod ffi;
@@ -32,7 +32,7 @@ use serde_json::Value;
 use std::ffi::c_void;
 use std::fmt::Display;
 pub use video::{TransformOperation, TransformOptions, VideoTransformer};
-pub use video_conversion::{Error, VideoFormat};
+pub use ppff_video_conversion::{Error, VideoFormat};
 
 /// ppdrive plugin entry point: transforms a video with libavfilter.
 ///
