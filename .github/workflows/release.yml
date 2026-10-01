@@ -114,7 +114,7 @@ jobs:
             "ppff-video-transformation-${os}-${arch}.${lib_ext}"
           mv "target/release/${prefix}media_streaming.${lib_ext}" \
             "ppff-media-streaming-${os}-${arch}.${lib_ext}"
-          ls -la ppdrive-*
+          ls -la ppff-*
 
       - uses: actions/upload-artifact@v4
         with:
@@ -169,7 +169,7 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: dist
-          pattern: ppdrive-*
+          pattern: ppff-*
           merge-multiple: true
 
       - name: Create or update release
